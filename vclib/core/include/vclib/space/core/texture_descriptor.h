@@ -96,6 +96,10 @@ private:
     WrapMode mWrapV =
         WrapMode::REPEAT; ///< The wrap mode for the V (T) texture coordinate.
 
+    Point2f mOffset{0.0f, 0.0f}; ///< The texture offset for U and V coordinates.
+    float   mRotation = 0.0f;    ///< The texture rotation in radians.
+    Point2f mScale{1.0f, 1.0f};  ///< The texture scale for U and V coordinates.
+
 public:
     /**
      * @brief Default constructor. Initializes with an empty path and default
@@ -184,13 +188,53 @@ public:
     WrapMode& wrapV() { return mWrapV; }
 
     /**
+     * @brief Gets the texture offset for U and V coordinates.
+     * @return A const reference to the texture offset array.
+     */
+    const Point2f& offset() const { return mOffset; }
+
+    /**
+     * @brief Gets a mutable reference to the texture offset for U and V
+     * coordinates.
+     * @return A reference to the texture offset array.
+     */
+    Point2f& offset() { return mOffset; }
+
+    /**
+     * @brief Gets the texture rotation in radians.
+     * @return The texture rotation.
+     */
+    float rotation() const { return mRotation; }
+
+    /**
+     * @brief Gets a mutable reference to the texture rotation in radians.
+     * @return A reference to the texture rotation.
+     */
+    float& rotation() { return mRotation; }
+
+    /**
+     * @brief Gets the texture scale for U and V coordinates.
+     * @return A const reference to the texture scale array.
+     */
+    const Point2f& scale() const { return mScale; }
+
+    /**
+     * @brief Gets a mutable reference to the texture scale for U and V
+     * coordinates.
+     * @return A reference to the texture scale array.
+     */
+    Point2f& scale() { return mScale; }
+
+    /**
      * @brief Serializes the TextureDescriptor to an output stream.
      * @param[in/out] os: The output stream.
      */
     void serialize(std::ostream& os) const
     {
         vcl::serialize(os, mPath);
-        vcl::serialize(os, mMinFilter, mMagFilter, mWrapU, mWrapV);
+        vcl::serialize(os, mMinFilter, mMagFilter, mWrapU, mWrapV, mRotation);
+        mOffset.serialize(os);
+        mScale.serialize(os);
     }
 
     /**
@@ -200,7 +244,9 @@ public:
     void deserialize(std::istream& is)
     {
         vcl::deserialize(is, mPath);
-        vcl::deserialize(is, mMinFilter, mMagFilter, mWrapU, mWrapV);
+        vcl::deserialize(is, mMinFilter, mMagFilter, mWrapU, mWrapV, mRotation);
+        mOffset.deserialize(is);
+        mScale.deserialize(is);
     }
 
     /**

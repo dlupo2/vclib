@@ -59,6 +59,25 @@ class MaterialUniforms
     // alpha cutoff and maybe other alpha related settings can be stored here
     std::array<float, 4> mAlphaPack = {0.5, 0.0, 0.0, 0.0};
 
+    std::array<std::array<float, 4>, N_TEXTURES>
+        mTextureUvScaleTrans = // uv scale and translation for each texture
+        { 
+            std::array<float, 4>{1.0, 1.0, 0.0, 0.0}, // base color
+            std::array<float, 4>{1.0, 1.0, 0.0, 0.0}, // metallic-roughness
+            std::array<float, 4>{1.0, 1.0, 0.0, 0.0}, // normal
+            std::array<float, 4>{1.0, 1.0, 0.0, 0.0}, // occlusion
+            std::array<float, 4>{1.0, 1.0, 0.0, 0.0}  // emissive
+        };
+
+    constexpr static uint N_UV_ROTATION_PACKS =
+        N_TEXTURES / 4 + static_cast<uint>(N_TEXTURES % 4 != 0);
+
+    std::array<std::array<float, 4>, N_UV_ROTATION_PACKS> 
+        mTextureUvRotations = {
+            std::array<float, 4>{0.0, 0.0, 0.0, 0.0}, // rotations for textures 0-3
+            std::array<float, 4>{0.0, 0.0, 0.0, 0.0}  // rotations for texture 4
+        };
+
     Uniform mBaseColorUniform =
         Uniform("u_baseColorFactor", bgfx::UniformType::Vec4);
 
@@ -72,6 +91,20 @@ class MaterialUniforms
 
     Uniform mAlphaPackUniform =
         Uniform("u_alphaPack", bgfx::UniformType::Vec4);
+
+    std::array<Uniform, N_TEXTURES> mTextureUvScaleTransUniforms = {
+        Uniform("u_baseColorTexUvScaleTrans", bgfx::UniformType::Vec4),
+        Uniform("u_metallicRoughnessTexUvScaleTrans", bgfx::UniformType::Vec4),
+        Uniform("u_normalTexUvScaleTrans", bgfx::UniformType::Vec4),
+        Uniform("u_occlusionTexUvScaleTrans", bgfx::UniformType::Vec4),
+        Uniform("u_emissiveTexUvScaleTrans", bgfx::UniformType::Vec4),
+    };
+
+    Uniform mUvRotationPack0Uniform =
+        Uniform("u_uvRotationPack0", bgfx::UniformType::Vec4);
+
+    Uniform mUvRotationPack1Uniform =
+        Uniform("u_uvRotationPack1", bgfx::UniformType::Vec4);
 
 public:
     MaterialUniforms() = default;
@@ -124,6 +157,17 @@ public:
             if (textureAvailable[i]) {
                 // texture available, uses settings from 0 to N_TEXTURES
                 textureSettings |= 1 << (VCL_PBR_TEXTURE_BASE_COLOR + i);
+
+                const TextureDescriptor& td = m.textureDescriptor(
+                    static_cast<Material::TextureType>(i));
+
+                // set texture UV scale and translation uniforms
+                mTextureUvScaleTrans[i][0] = td.scale().x();
+                mTextureUvScaleTrans[i][1] = td.scale().y();
+                mTextureUvScaleTrans[i][2] = td.offset().x();
+                mTextureUvScaleTrans[i][3] = td.offset().y();
+
+                mTextureUvRotations[i / 4][i % 4] = td.rotation();
             }
         }
 
@@ -156,6 +200,12 @@ public:
         mEmissivePackUniform.bind(&mEmissivePack);
         mSettingsUniform.bind(&mSettings);
         mAlphaPackUniform.bind(&mAlphaPack);
+
+        for(int i=0; i<N_TEXTURES; ++i)
+            mTextureUvScaleTransUniforms[i].bind(&(mTextureUvScaleTrans[i]));
+            
+        mUvRotationPack0Uniform.bind(&(mTextureUvRotations[0]));
+        mUvRotationPack1Uniform.bind(&(mTextureUvRotations[1]));
     }
 };
 

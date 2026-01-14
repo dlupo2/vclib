@@ -80,7 +80,8 @@ void main()
 
     if (useTexture && isBaseColorTextureAvailable(u_pbr_texture_settings)) {
         // base color texture available
-        textureBaseColor = texture2D(baseColorTex, texcoord);
+        vec2 tc = mul(u_baseColorUvTransform, vec3(texcoord, 1.0)).xy;
+        textureBaseColor = texture2D(baseColorTex, tc);
     }
 
     // multiply vertex color with material base color
@@ -96,7 +97,8 @@ void main()
 
     if (useTexture && isMetallicRoughnessTextureAvailable(u_pbr_texture_settings)) {
         // metallic-roughness texture available
-        metallicRoughnessTexture = texture2D(metallicRoughnessTex, texcoord);
+        vec2 tc = mul(u_metallicRoughnessUvTransform, vec3(texcoord, 1.0)).xy;
+        metallicRoughnessTexture = texture2D(metallicRoughnessTex, tc);
     }
 
     float metallic = u_metallicFactor * metallicRoughnessTexture.b; // metallic is stored in B channel
@@ -106,7 +108,8 @@ void main()
     vec3 normal;
 
     if (useTexture && isNormalTextureAvailable(u_pbr_texture_settings)) {
-        vec3 normalTexture = texture2D(normalTex, texcoord).xyz;
+        vec2 tc = mul(u_normalUvTransform, vec3(texcoord, 1.0)).xy;
+        vec3 normalTexture = texture2D(normalTex, tc).xyz;
 
         // remapping normals
         // from [0,1] to [-1,1] for x and y (red and green)
@@ -125,7 +128,7 @@ void main()
         }
         else {
             // construct tangent frame using vertex normals
-            tangentFrame = tangentFrameFromNormal(v_normal, v_position, texcoord, vcl_FrontFacing);
+            tangentFrame = tangentFrameFromNormal(v_normal, v_position, tc, vcl_FrontFacing);
         }
 
         // change the basis of the normal provided by the texture
@@ -145,7 +148,8 @@ void main()
 
     if (useTexture && isEmissiveTextureAvailable(u_pbr_texture_settings)) {
         // emissive texture available
-        emissiveTexture = texture2D(emissiveTex, texcoord).rgb;
+        vec2 tc = mul(u_emissiveUvTransform, vec3(texcoord, 1.0)).xy;
+        emissiveTexture = texture2D(emissiveTex, tc).rgb;
     }
 
     vec3 emissiveColor = u_emissiveFactor * emissiveTexture * u_emissiveStrength;
@@ -185,7 +189,8 @@ void main()
         float occlusion = 1.0;
         if(useTexture && isOcclusionTextureAvailable(u_pbr_texture_settings))
         {
-            occlusion = texture2D(occlusionTex, texcoord).r;
+            vec2 tc = mul(u_occlusionUvTransform, vec3(texcoord, 1.0)).xy;
+            occlusion = texture2D(occlusionTex, tc).r;
         }
         occlusion = 1.0 + u_occlusionStrength * (occlusion - 1.0);
 
