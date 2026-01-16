@@ -38,46 +38,6 @@ namespace vcl {
  */
 class Environment
 {
-
-    std::string mImagePath;
-
-    vcl::VertexBuffer mVertexBuffer;
-    static const uint mVertexNumber = 3;
-    inline static const float mVertices[mVertexNumber * 3] {
-        -3, -1,  1,
-         1, -1,  1,
-         1,  3,  1
-    };
-
-    bool 
-        mBackgroundReady = false,
-        mCanDraw         = false;
-
-    uint32_t 
-        mCubeSide           = 0,
-        mIrradianceCubeSide = 0,
-        mSpecularCubeSide   = 0,
-        mBrdfLutSize        = 1024;
-
-    uint8_t 
-        mCubeMips     = 0,
-        mSpecularMips = 0;
-
-    vcl::Uniform 
-        mHdrSamplerUniform            = Uniform("s_hdr", bgfx::UniformType::Sampler),
-        mEnvCubeSamplerUniform        = Uniform("s_env0", bgfx::UniformType::Sampler),
-        mIrradianceCubeSamplerUniform = Uniform("s_irradiance", bgfx::UniformType::Sampler),
-        mSpecularCubeSamplerUniform   = Uniform("s_specular", bgfx::UniformType::Sampler),
-        mBrdfLutSamplerUniform        = Uniform("s_brdf_lut", bgfx::UniformType::Sampler),
-        mDataUniform                  = Uniform("u_dataPack", bgfx::UniformType::Vec4);
-
-    std::unique_ptr<Texture> 
-        mHdrTexture, 
-        mCubeMapTexture, 
-        mIrradianceTexture,
-        mSpecularTexture,
-        mBrdfLuTexture;
-
     enum class FileFormat
     {
         UNKNOWN,
@@ -87,53 +47,47 @@ class Environment
         DDS
     };
 
-    FileFormat mSourceFormat = FileFormat::UNKNOWN;
-
-    class AlignedAllocator : public bx::AllocatorI
-    {
-    public:
-    	AlignedAllocator(bx::AllocatorI* _allocator, size_t _minAlignment)
-    		: m_allocator(_allocator)
-    		, m_minAlignment(_minAlignment)
-    	{
-    	}
-
-    	virtual void* realloc(
-    			void* _ptr
-    		, size_t _size
-    		, size_t _align
-    		, const char* _file
-    		, uint32_t _line
-    		)
-    	{
-    		return m_allocator->realloc(_ptr, _size, bx::max(_align, m_minAlignment), _file, _line);
-    	}
-
-    	bx::AllocatorI* m_allocator;
-    	size_t m_minAlignment;
-    };
-
-    // Allocator references are stored in image containers
-    // so they have to remain visible somehow.
-    // TODO: find a better way to do so.
-    inline static bx::DefaultAllocator bxDefaultAllocator;
-    inline static AlignedAllocator bxAlignedAllocator = AlignedAllocator(&bxDefaultAllocator, 16);
-
     bimg::ImageContainer* mImage = nullptr;
 
-    public:
+    vcl::VertexBuffer mVertexBuffer;
 
+    uint32_t mCubeSide           = 0;
+    uint32_t mIrradianceCubeSide = 0;
+    uint32_t mSpecularCubeSide   = 0;
+    uint32_t mBrdfLutSize        = 1024;
+
+    uint8_t mCubeMips     = 0;
+    uint8_t mSpecularMips = 0;
+
+    Uniform mHdrSamplerUniform = Uniform("s_hdr", bgfx::UniformType::Sampler);
+    Uniform mEnvCubeSamplerUniform =
+        Uniform("s_env0", bgfx::UniformType::Sampler);
+    Uniform mIrradianceCubeSamplerUniform =
+        Uniform("s_irradiance", bgfx::UniformType::Sampler);
+    Uniform mSpecularCubeSamplerUniform =
+        Uniform("s_specular", bgfx::UniformType::Sampler);
+    Uniform mBrdfLutSamplerUniform =
+        Uniform("s_brdf_lut", bgfx::UniformType::Sampler);
+    Uniform mDataUniform = Uniform("u_dataPack", bgfx::UniformType::Vec4);
+
+    std::unique_ptr<Texture> mHdrTexture;
+    std::unique_ptr<Texture> mCubeMapTexture;
+    std::unique_ptr<Texture> mIrradianceTexture;
+    std::unique_ptr<Texture> mSpecularTexture;
+    std::unique_ptr<Texture> mBrdfLuTexture;
+
+public:
     Environment() = default;
 
-    Environment(const std::string& imagePath):
-        mImagePath(imagePath)
-    {}
+    Environment(const std::string& imagePath);
 
     Environment(const Environment& other) = delete;
 
     Environment(Environment&& other) { swap(other); }
 
     ~Environment() = default;
+
+    Environment& operator=(const Environment& other) = delete;
 
     Environment& operator=(Environment&& other)
     {
@@ -144,22 +98,18 @@ class Environment
     void swap(Environment& other)
     {
         using std::swap;
-        swap(mBackgroundReady, other.mBackgroundReady);
-        swap(mCanDraw, other.mCanDraw);
         swap(mCubeSide, other.mCubeSide);
         swap(mIrradianceCubeSide, other.mIrradianceCubeSide);
         swap(mSpecularCubeSide, other.mSpecularCubeSide);
         swap(mBrdfLutSize, other.mBrdfLutSize);
         swap(mCubeMips, other.mCubeMips);
         swap(mSpecularMips, other.mSpecularMips);
-        swap(mSourceFormat, other.mSourceFormat);
         swap(mImage, other.mImage);
         swap(mHdrTexture, other.mHdrTexture);
         swap(mCubeMapTexture, other.mCubeMapTexture);
         swap(mIrradianceTexture, other.mIrradianceTexture);
         swap(mSpecularTexture, other.mSpecularTexture);
         swap(mBrdfLuTexture, other.mBrdfLuTexture);
-        mImagePath.swap(other.mImagePath);
         mVertexBuffer.swap(other.mVertexBuffer);
     }
 
@@ -191,7 +141,7 @@ class Environment
     */
     void bindTexture(TextureType type, uint stage, uint samplerFlags = BGFX_SAMPLER_UVW_CLAMP) const;
 
-    /** @brief Binds the provided data to the helper uniform (a vec4) handled by the Environment class. 
+    /** @brief Binds the provided data to the helper uniform (a vec4) handled by the Environment class.
      * @param[in] d0: The first float data to bind. Default is 0.0f.
      * @param[in] d1: The second float data to bind. Default is 0.0f.
      * @param[in] d2: The third float data to bind. Default is 0.0f.
@@ -202,19 +152,14 @@ class Environment
     /** @brief Checks if the environment is ready to be drawn.
      * @return true if the environment can be drawn, false otherwise.
     */
-    bool canDraw() const { return mCanDraw; }
+    bool canDraw() const { return mImage != nullptr; }
 
     /** @brief Gets the number of mipmap levels in the specular environment map.
      * @return The number of mipmap levels in the specular environment map.
     */
     uint8_t specularMips() const { return mSpecularMips; }
 
-    private:
-
-    /** @brief Prepares the background environment by loading the panorama image and generating necessary textures.
-     * @param[in] viewId: The view ID to use for texture generation.
-    */
-    void prepareBackground(const uint viewId);
+private:
 
     /** @brief Determines the file format of the given image based on its extension.
      * @param[in] imagePath: The path to the image file.
@@ -239,16 +184,6 @@ class Environment
      * @param[in] viewId: The view ID to use for texture generation.
     */
     void generateTextures(const uint viewId);
-
-    template<typename T>
-    std::pair<T*, bgfx::ReleaseFn> getAllocatedBufferAndReleaseFn(uint size)
-    {
-        T* buffer = new T[size];
-
-        return std::make_pair(buffer, [](void* ptr, void*) {
-            delete[] static_cast<T*>(ptr);
-        });
-    }
 };
 
 } // namespace vcl
