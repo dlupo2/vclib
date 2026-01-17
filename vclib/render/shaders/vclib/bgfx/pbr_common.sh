@@ -73,6 +73,46 @@
 #define TONEMAP_KHRONOS_PBR_NEUTRAL      5
 
 /**
+ * @brief Computes the UV transformation matrix given scale, translation and rotation.
+ * @param[in] scale: The scale vector.
+ * @param[in] translation: The translation vector.
+ * @param[in] rotation: The rotation angle in radians.
+ * @return The UV transformation matrix.
+ */
+mat3 getUvTransform(vec2 scale, vec2 translation, float rotation)
+{
+    float cosR = cos(rotation);
+    float sinR = sin(rotation);
+
+    // KHR_texture_transform spec requires top-left origin for UV transformations
+    mat3 flipVMat = mat3(
+        1.0,  0.0, 0.0,
+        0.0, -1.0, 1.0,
+        0.0,  0.0, 1.0
+    );
+
+    mat3 rotationMat = mat3(
+        cosR ,  sinR, 0.0,
+        -sinR,  cosR, 0.0,
+        0.0  ,  0.0 , 1.0
+    );
+
+    mat3 scaleMat = mat3(
+        scale.x, 0.0,     0.0,
+        0.0,     scale.y, 0.0,
+        0.0,     0.0,     1.0
+    );
+
+    mat3 translationMat = mat3(
+        1.0, 0.0, translation.x,
+        0.0, 1.0, translation.y,
+        0.0, 0.0, 1.0
+    );
+
+    return flipVMat * scaleMat * rotationMat * translationMat * flipVMat;
+}
+
+/**
  * @brief Computes the solid angle covered by the rectangle starting from (0,0) to some given (u,v) projected onto a unit sphere.
  * Supposedly used for cubemap texel solid angle computation. 
  * @param[in] uv: The UV coordinates.

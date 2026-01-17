@@ -56,13 +56,25 @@ int loadGltfPrimitiveMaterial(
     int idx = -1;
 
     if (p.material >= 0) {
+        const tinygltf::Material& mat = model.materials[p.material];
+
         vcl::Color          baseColor, emissiveColor;
         Material::AlphaMode alphaMode;
         double metallic, roughness, alphaCutoff, normalScale, occlusionStrength;
         bool   doubleSided;
-        int    baseColorTextureId, metallicRoughnessTextureId, normalTextureId,
-            occlusionTextureId, emissiveTextureId;
-        const tinygltf::Material& mat = model.materials[p.material];
+        int    baseColorTextureId, metallicRoughnessTextureId,
+            normalTextureId, occlusionTextureId, emissiveTextureId;
+        
+        // extensions data
+        double emissiveStrength = 1.0f;
+        const tinygltf::ExtensionMap& 
+            baseColorTextureExtensions = mat.pbrMetallicRoughness.baseColorTexture.extensions,
+            metallicRoughnessTextureExtensions = mat.pbrMetallicRoughness.metallicRoughnessTexture.extensions,
+            normalTextureExtensions = mat.normalTexture.extensions,
+            occlusionTextureExtensions = mat.occlusionTexture.extensions,
+            emissiveTextureExtensions = mat.emissiveTexture.extensions;
+
+
 
         std::string matName = mat.name;
 
@@ -76,6 +88,7 @@ int loadGltfPrimitiveMaterial(
         baseColorTextureId =
             mat.pbrMetallicRoughness.baseColorTexture
                 .index; // get the id of the texture, -1 if not present
+                
 
         // metallicFactor
         metallic = mat.pbrMetallicRoughness.metallicFactor; // has default value
@@ -122,9 +135,19 @@ int loadGltfPrimitiveMaterial(
         // occlusionStrength
         occlusionStrength = mat.occlusionTexture.strength;
 
+        // extensions
+        if(mat.extensions.contains("KHR_materials_emissive_strength")) {
+            const tinygltf::Value& ext =
+                mat.extensions.at("KHR_materials_emissive_strength");
+            if(ext.Has("emissiveStrength"))
+                emissiveStrength = ext.Get("emissiveStrength").GetNumberAsDouble();
+        }
+
         // function to load a texture in a material
         auto loadTextureInMaterial = [&](Material&             mat,
-                                         int                   textureId,
+                                         int textureId,
+                                         const tinygltf::ExtensionMap&
+                                             textureExtensions,
                                          Material::TextureType type) {
             if (textureId != -1) {
                 const tinygltf::Image& img =
@@ -170,6 +193,33 @@ int loadGltfPrimitiveMaterial(
                         texture.wrapV() == TextureDescriptor::WrapMode::REPEAT);
                 }
 
+                // set texture transform
+                if(textureExtensions.contains("KHR_texture_transform")) {
+                    const tinygltf::Value& ext =
+                        textureExtensions.at("KHR_texture_transform");
+                    if(ext.Has("offset"))
+                    {
+                        const tinygltf::Value& offsetVal = ext.Get("offset");
+                        texture.offset() = {
+                            static_cast<float>(offsetVal.Get(0).GetNumberAsDouble()),
+                            static_cast<float>(offsetVal.Get(1).GetNumberAsDouble())
+                        };
+                    }
+                    if(ext.Has("rotation"))
+                    {
+                        const double rotation = ext.Get("rotation").GetNumberAsDouble();
+                        texture.rotation() = static_cast<float>(rotation);
+                    }
+                    if(ext.Has("scale"))
+                    {
+                        const tinygltf::Value& scaleVal = ext.Get("scale");
+                        texture.scale() = {
+                            static_cast<float>(scaleVal.Get(0).GetNumberAsDouble()),
+                            static_cast<float>(scaleVal.Get(1).GetNumberAsDouble())
+                        };
+                    }
+                }
+
                 // if the image is valid, load it to the texture
                 if (img.image.size() > 0 &&
                     (img.bits == 8 || img.component == 4)) {
@@ -195,18 +245,20 @@ int loadGltfPrimitiveMaterial(
             mat.doubleSided()       = doubleSided;
             mat.normalScale()       = normalScale;
             mat.occlusionStrength() = occlusionStrength;
+            mat.emissiveStrength()  = emissiveStrength;
             loadTextureInMaterial(
-                mat, baseColorTextureId, Material::TextureType::BASE_COLOR);
+                mat, baseColorTextureId, baseColorTextureExtensions, Material::TextureType::BASE_COLOR);
             loadTextureInMaterial(
                 mat,
                 metallicRoughnessTextureId,
+                metallicRoughnessTextureExtensions,
                 Material::TextureType::METALLIC_ROUGHNESS);
             loadTextureInMaterial(
-                mat, normalTextureId, Material::TextureType::NORMAL);
+                mat, normalTextureId, normalTextureExtensions, Material::TextureType::NORMAL);
             loadTextureInMaterial(
-                mat, occlusionTextureId, Material::TextureType::OCCLUSION);
+                mat, occlusionTextureId, occlusionTextureExtensions, Material::TextureType::OCCLUSION);
             loadTextureInMaterial(
-                mat, emissiveTextureId, Material::TextureType::EMISSIVE);
+                mat, emissiveTextureId, emissiveTextureExtensions, Material::TextureType::EMISSIVE);
             m.pushMaterial(mat);
             idx = m.materialsNumber() - 1; // index of the added material
             if constexpr (HasColor<MeshType>) {

@@ -25,20 +25,37 @@
 
 uniform vec4 u_baseColorFactor;
 uniform vec4 u_FactorsPack;
-uniform vec4 u_emissiveAlphaCutoffPack;
+uniform vec4 u_emissivePack;
+uniform vec4 u_alphaPack;
 uniform vec4 u_settings;
+
+uniform vec4 u_baseColorTexUvScaleTrans;
+uniform vec4 u_metallicRoughnessTexUvScaleTrans;
+uniform vec4 u_normalTexUvScaleTrans;
+uniform vec4 u_occlusionTexUvScaleTrans;
+uniform vec4 u_emissiveTexUvScaleTrans;
+
+uniform vec4 u_uvRotationPack0;
+uniform vec4 u_uvRotationPack1;
 
 #define u_occlusionStrength u_FactorsPack.r
 #define u_roughnessFactor u_FactorsPack.g
 #define u_metallicFactor u_FactorsPack.b
 #define u_normalScale u_FactorsPack.a
 
-#define u_emissiveFactor u_emissiveAlphaCutoffPack.rgb
-#define u_alphaCutoff u_emissiveAlphaCutoffPack.a
+#define u_emissiveFactor u_emissivePack.rgb
+#define u_emissiveStrength u_emissivePack.a
+
+#define u_alphaCutoff u_alphaPack.x
 
 #define u_pbr_settings floatBitsToUint(u_settings.x)
 #define u_pbr_texture_settings floatBitsToUint(u_settings.y)
 #define u_tone_mapping int(u_settings.z)
 #define u_exposure u_settings.w
 
+#define u_baseColorUvTransform         getUvTransform(u_baseColorTexUvScaleTrans.xy, u_baseColorTexUvScaleTrans.zw, u_uvRotationPack0.x)
+#define u_metallicRoughnessUvTransform getUvTransform(u_metallicRoughnessTexUvScaleTrans.xy, u_metallicRoughnessTexUvScaleTrans.zw, u_uvRotationPack0.y)
+#define u_normalUvTransform            getUvTransform(u_normalTexUvScaleTrans.xy, u_normalTexUvScaleTrans.zw, u_uvRotationPack0.z)
+#define u_occlusionUvTransform         getUvTransform(u_occlusionTexUvScaleTrans.xy, u_occlusionTexUvScaleTrans.zw, u_uvRotationPack0.w)
+#define u_emissiveUvTransform          getUvTransform(u_emissiveTexUvScaleTrans.xy, u_emissiveTexUvScaleTrans.zw, u_uvRotationPack1.x)
 #endif // VCL_EXT_BGFX_UNIFORMS_MATERIAL_UNIFORMS_SH
