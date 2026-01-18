@@ -109,7 +109,13 @@ mat3 getUvTransform(vec2 scale, vec2 translation, float rotation)
         0.0, 0.0, 1.0
     );
 
-    return flipVMat * scaleMat * rotationMat * translationMat * flipVMat;
+    return mul(
+        flipVMat, mul(
+        translationMat, mul(
+        rotationMat, mul(
+        scaleMat,
+        flipVMat
+    ))));
 }
 
 /**
