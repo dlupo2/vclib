@@ -38,6 +38,7 @@ int main(int argc, char** argv)
         DAMAGED_HELMET,
         COMPARE_EMISSIVE_STRENGTH,
         TEXTURE_TRANSFORM_TEST,
+        COMPARE_SHEEN,
         COUNT_EXAMPLES
     };
 
@@ -48,10 +49,11 @@ int main(int argc, char** argv)
         "/gltf/CompareAmbientOcclusion/CompareAmbientOcclusion.gltf",
         "/gltf/DamagedHelmet/DamagedHelmet.gltf",
         "/gltf/CompareEmissiveStrength/CompareEmissiveStrength.gltf",
-        "/gltf/TextureTransformTest/TextureTransformTest.gltf"
+        "/gltf/TextureTransformTest/TextureTransformTest.gltf",
+        "/gltf/CompareSheen/CompareSheen.gltf"
     };
 
-    uint selectedExample = TEXTURE_TRANSFORM_TEST;
+    uint selectedExample = COMPARE_SHEEN;
 
     enum PanoramasExamples {
         COLOSSEUM_HDR,

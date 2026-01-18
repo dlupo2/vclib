@@ -68,6 +68,9 @@ public:
         OCCLUSION, ///< The ambient occlusion map (R channel). Stored in linear
                    ///< color space.
         EMISSIVE,  ///< The emissive color texture. Stored in sRGB color space.
+        SHEEN_COLOR,     ///< The sheen color texture. Stored in sRGB color space.
+        SHEEN_ROUGHNESS, ///< The sheen roughness texture. Stored in linear
+                       ///< color space.
         COUNT      ///< Utility value to get the number of texture types.
     };
 
@@ -78,7 +81,9 @@ public:
                 "metallicRoughnessTex",
                 "normalTex",
                 "occlusionTex",
-                "emissiveTex"};
+                "emissiveTex",
+                "sheenColorTex",
+                "sheenRoughnessTex"};
 
 private:
     inline static const uint N_TEXTURE_TYPE =
@@ -110,6 +115,10 @@ private:
 
     // extension PBR properties
     float mEmissiveStrength = 1.0f;
+
+    Color mSheenColor = Color::Black;
+
+    float mSheenRoughness = 0.0f;
 
 public:
     /**
@@ -270,6 +279,32 @@ public:
     float& emissiveStrength() { return mEmissiveStrength; }
 
     /**
+     * @brief Gets the sheen factor of the material.
+     * This defines the color of the sheen effect.
+     * @return A const reference to the sheen color.
+     */
+    const Color& sheenColor() const { return mSheenColor; }
+
+    /**
+     * @brief Gets a mutable reference to the sheen color.
+     * @return A reference to the sheen color.
+     */
+    Color& sheenColor() { return mSheenColor; }
+
+    /**
+     * @brief Gets the sheen roughness factor of the material.
+     * This controls the roughness of the sheen effect.
+     * @return The sheen roughness factor, in the range [0.0, 1.0].
+     */
+    float sheenRoughness() const { return mSheenRoughness; }
+
+    /**
+     * @brief Gets a mutable reference to the sheen roughness factor.
+     * @return A reference to the sheen roughness factor.
+     */
+    float& sheenRoughness() { return mSheenRoughness; }
+
+    /**
      * @brief Gets the texture descriptor for the base color texture.
      * @return A const reference to the base color texture descriptor.
      */
@@ -350,6 +385,8 @@ public:
         vcl::serialize(os, mNormalScale);
         vcl::serialize(os, mOcclusionStrength);
         vcl::serialize(os, mEmissiveStrength);
+        mSheenColor.serialize(os);
+        vcl::serialize(os, mSheenRoughness);
         vcl::serialize(os, mTextureDescriptors);
         vcl::serialize(os, mDoubleSided);
     }
@@ -368,6 +405,8 @@ public:
         vcl::deserialize(is, mNormalScale);
         vcl::deserialize(is, mOcclusionStrength);
         vcl::deserialize(is, mEmissiveStrength);
+        mSheenColor.deserialize(is);
+        vcl::deserialize(is, mSheenRoughness);
         vcl::deserialize(is, mTextureDescriptors);
         vcl::deserialize(is, mDoubleSided);
     }
@@ -394,10 +433,12 @@ public:
     {
         switch (type) {
         case TextureType::BASE_COLOR:
-        case TextureType::EMISSIVE: return Image::ColorSpace::SRGB;
+        case TextureType::EMISSIVE: 
+        case TextureType::SHEEN_COLOR: return Image::ColorSpace::SRGB;
         case TextureType::METALLIC_ROUGHNESS:
         case TextureType::NORMAL:
         case TextureType::OCCLUSION:
+        case TextureType::SHEEN_ROUGHNESS:
         default: return Image::ColorSpace::LINEAR;
         }
     }

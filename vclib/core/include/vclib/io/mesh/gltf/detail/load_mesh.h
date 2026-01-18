@@ -67,12 +67,18 @@ int loadGltfPrimitiveMaterial(
         
         // extensions data
         double emissiveStrength = 1.0f;
+        double sheenRoughness = 0.0f;
+        vcl::Color sheenColor;
         const tinygltf::ExtensionMap& 
             baseColorTextureExtensions = mat.pbrMetallicRoughness.baseColorTexture.extensions,
             metallicRoughnessTextureExtensions = mat.pbrMetallicRoughness.metallicRoughnessTexture.extensions,
             normalTextureExtensions = mat.normalTexture.extensions,
             occlusionTextureExtensions = mat.occlusionTexture.extensions,
             emissiveTextureExtensions = mat.emissiveTexture.extensions;
+        tinygltf::ExtensionMap
+            sheenColorTextureExtensions = tinygltf::ExtensionMap(),
+            sheenRoughnessTextureExtensions = tinygltf::ExtensionMap();
+        int sheenColorTextureId = -1, sheenRoughnessTextureId = -1;
 
 
 
@@ -141,6 +147,41 @@ int loadGltfPrimitiveMaterial(
                 mat.extensions.at("KHR_materials_emissive_strength");
             if(ext.Has("emissiveStrength"))
                 emissiveStrength = ext.Get("emissiveStrength").GetNumberAsDouble();
+        }
+
+        if(mat.extensions.contains("KHR_materials_sheen")) {
+            const tinygltf::Value& ext =
+                mat.extensions.at("KHR_materials_sheen");
+            // sheenColorFactor
+            if(ext.Has("sheenColorFactor")) {
+                const tinygltf::Value& sheenColorFactorVal = ext.Get("sheenColorFactor");
+                for (uint i = 0; i < 3; i++)
+                    sheenColor[i] = 
+                        sheenColorFactorVal.Get(i).GetNumberAsDouble() * 255.0;
+            }
+            // sheenRoughnessFactor
+            if(ext.Has("sheenRoughnessFactor"))
+                sheenRoughness = ext.Get("sheenRoughnessFactor").GetNumberAsDouble();
+
+            if(ext.Has("sheenColorTexture")) {
+                const tinygltf::Value& sheenColorTextureVal = ext.Get("sheenColorTexture");
+                if(sheenColorTextureVal.Has("index"))
+                {
+                    sheenColorTextureId = sheenColorTextureVal.Get("index").GetNumberAsInt();
+                    sheenColorTextureExtensions["extensions"] =
+                        sheenColorTextureVal.Get("extensions");
+                }
+            }
+            if(ext.Has("sheenRoughnessTexture")) {
+                const tinygltf::Value& sheenRoughnessTextureVal = ext.Get("sheenRoughnessTexture");
+                if(sheenRoughnessTextureVal.Has("index"))
+                {
+                    sheenRoughnessTextureId = 
+                        sheenRoughnessTextureVal.Get("index").GetNumberAsInt();
+                    sheenRoughnessTextureExtensions["extensions"] =
+                        sheenRoughnessTextureVal.Get("extensions");
+                }
+            }
         }
 
         // function to load a texture in a material
@@ -246,6 +287,8 @@ int loadGltfPrimitiveMaterial(
             mat.normalScale()       = normalScale;
             mat.occlusionStrength() = occlusionStrength;
             mat.emissiveStrength()  = emissiveStrength;
+            mat.sheenColor()        = sheenColor;
+            mat.sheenRoughness()    = sheenRoughness;
             loadTextureInMaterial(
                 mat, baseColorTextureId, baseColorTextureExtensions, Material::TextureType::BASE_COLOR);
             loadTextureInMaterial(
@@ -259,6 +302,10 @@ int loadGltfPrimitiveMaterial(
                 mat, occlusionTextureId, occlusionTextureExtensions, Material::TextureType::OCCLUSION);
             loadTextureInMaterial(
                 mat, emissiveTextureId, emissiveTextureExtensions, Material::TextureType::EMISSIVE);
+            loadTextureInMaterial(
+                mat, sheenColorTextureId, sheenColorTextureExtensions, Material::TextureType::SHEEN_COLOR);
+            loadTextureInMaterial(
+                mat, sheenRoughnessTextureId, sheenRoughnessTextureExtensions, Material::TextureType::SHEEN_ROUGHNESS);
             m.pushMaterial(mat);
             idx = m.materialsNumber() - 1; // index of the added material
             if constexpr (HasColor<MeshType>) {

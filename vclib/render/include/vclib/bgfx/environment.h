@@ -63,6 +63,8 @@ class Environment
         Uniform("s_specular", bgfx::UniformType::Sampler);
     Uniform mBrdfLutSamplerUniform =
         Uniform("s_brdf_lut", bgfx::UniformType::Sampler);
+    Uniform mSheenCubeSamplerUniform =
+        Uniform("s_sheen", bgfx::UniformType::Sampler);
     Uniform mDataUniform = Uniform("u_dataPack", bgfx::UniformType::Vec4);
 
     std::unique_ptr<Texture> mHdrTexture;
@@ -70,6 +72,7 @@ class Environment
     std::unique_ptr<Texture> mIrradianceTexture;
     std::unique_ptr<Texture> mSpecularTexture;
     std::unique_ptr<Texture> mBrdfLuTexture;
+    std::unique_ptr<Texture> mSheenTexture;
 
 public:
     /** @brief Types of environment textures managed by the Environment class. */
@@ -78,7 +81,8 @@ public:
         RAW_CUBE,
         IRRADIANCE,
         SPECULAR,
-        BRDF_LUT
+        BRDF_LUT,
+        SHEEN
     };
 
     Environment() = default;
@@ -109,6 +113,7 @@ public:
         swap(mIrradianceTexture, other.mIrradianceTexture);
         swap(mSpecularTexture, other.mSpecularTexture);
         swap(mBrdfLuTexture, other.mBrdfLuTexture);
+        swap(mSheenTexture, other.mSheenTexture);
         mVertexBuffer.swap(other.mVertexBuffer);
     }
 

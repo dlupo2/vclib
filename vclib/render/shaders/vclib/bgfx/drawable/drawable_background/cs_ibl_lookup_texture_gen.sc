@@ -57,6 +57,8 @@ void main()
     float I1 = 0.0;
     float I2 = 0.0;
 
+    float I3 = 0.0;
+
     const uint SAMPLE_COUNT = 1024u;
     for(uint i = 0; i < SAMPLE_COUNT; ++i)
     {
@@ -86,13 +88,18 @@ void main()
             float Fc = pow(1.0 - VoH, 5.0);
             I1 += (1.0 - Fc) * V_pdf;
             I2 += Fc * V_pdf;
+
+            // LUT for Charlie distribution.
+            float sheenDistribution = D_Charlie(roughness, NoH);
+            float sheenVisibility = V_Ashikhmin(NoL, NoV);
+            I3 += sheenVisibility * sheenDistribution * NoL * VoH;
         }
     }
 
     // The PDF is simply pdf(v, h) -> NDF * <nh>.
     // To parametrize the PDF over l, use the Jacobian transform, yielding to: pdf(v, l) -> NDF * <nh> / 4<vh>
     // Since the BRDF divide through the PDF to be normalized, the 4 can be pulled out of the integral.
-    vec3 brdf = vec3(I1, I2, 0.0) * vec3_splat(4.0);
+    vec3 brdf = vec3(I1, I2, I3) * vec3_splat(4.0);
     brdf /= vec3_splat(SAMPLE_COUNT);
 
     imageStore(u_lut, pixel, vec4(brdf, 1.0));

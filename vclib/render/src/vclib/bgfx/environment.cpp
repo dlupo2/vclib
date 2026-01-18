@@ -70,7 +70,7 @@ void Environment::drawBackground(
     ProgramManager& pm = Context::instance().programManager();
 
     using enum TextureType;
-    bindTexture(RAW_CUBE, VCL_MRB_CUBEMAP0);
+    bindTexture(SHEEN, VCL_MRB_CUBEMAP0);
 
     bindDataUniform(float(toneMapping), exposure);
 
@@ -121,6 +121,15 @@ void Environment::bindTexture(TextureType type, uint stage, uint samplerFlags) c
             mBrdfLuTexture->bind(
                 stage,
                 mBrdfLutSamplerUniform.handle(),
+                samplerFlags
+            );
+            break;
+        }
+        case SHEEN:
+        {
+            mSheenTexture->bind(
+                stage,
+                mSheenCubeSamplerUniform.handle(),
                 samplerFlags
             );
             break;
@@ -293,6 +302,17 @@ void Environment::setTextures(const bimg::ImageContainer& image)
         bgfx::TextureFormat::RGBA32F
     );
     mBrdfLuTexture = std::move(brdfLuTexture);
+
+    auto sheenTexture =  std::make_unique<Texture>();
+    sheenTexture->set(
+        nullptr,
+        Point2i(irrSpecCubeSide, irrSpecCubeSide),
+        true, // has mips
+        BGFX_TEXTURE_COMPUTE_WRITE | BGFX_TEXTURE_RT,
+        bgfx::TextureFormat::RGBA32F,
+        true // is cubemap
+    );
+    mSheenTexture = std::move(sheenTexture);
 }
 
 void Environment::fullScreenTriangle()
@@ -411,7 +431,7 @@ void Environment::generateTextures(const bimg::ImageContainer& image)
         6
     );
 
-    // create specular map from cubemap
+    // create specular and sheen map from cubemap
 
     for(uint8_t mip = 0; mip < mSpecularMips; ++mip)
     {
@@ -436,7 +456,30 @@ void Environment::generateTextures(const bimg::ImageContainer& image)
             bgfx::TextureFormat::RGBA32F
         );
 
-        bindDataUniform(roughness, float(cubeSide));
+        bindDataUniform(roughness, float(cubeSide), 1.0f); // GGX = 1
+
+        bgfx::dispatch(
+            viewId,
+            pm.getComputeProgram<CUBEMAP_TO_SPECULAR>(),
+            threadGroups,
+            threadGroups,
+            6
+        );
+
+        mCubeMapTexture->bind(
+            0,
+            mEnvCubeSamplerUniform.handle(),
+            BGFX_SAMPLER_UVW_CLAMP
+        );
+
+        mSheenTexture->bindForCompute(
+            1,
+            mip,
+            bgfx::Access::Write,
+            bgfx::TextureFormat::RGBA32F
+        );
+
+        bindDataUniform(roughness, float(cubeSide), 2.0f); // Charlie = 2
 
         bgfx::dispatch(
             viewId,

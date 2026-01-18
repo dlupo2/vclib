@@ -49,6 +49,9 @@ class MaterialUniforms
     // it can be used to store the emissive strength
     std::array<float, 4> mEmissivePack = {0.0, 0.0, 0.0, 1.0};
 
+    // sheen color RGB and roughness A
+    std::array<float, 4> mSheenFactorsPack = {0.0, 0.0, 0.0, 0.0};
+
     // settings packed in a vec4
     // .x : pbr settings
     // .y : texture settings
@@ -66,7 +69,9 @@ class MaterialUniforms
             std::array<float, 4>{1.0, 1.0, 0.0, 0.0}, // metallic-roughness
             std::array<float, 4>{1.0, 1.0, 0.0, 0.0}, // normal
             std::array<float, 4>{1.0, 1.0, 0.0, 0.0}, // occlusion
-            std::array<float, 4>{1.0, 1.0, 0.0, 0.0}  // emissive
+            std::array<float, 4>{1.0, 1.0, 0.0, 0.0}, // emissive
+            std::array<float, 4>{1.0, 1.0, 0.0, 0.0}, // sheen color
+            std::array<float, 4>{1.0, 1.0, 0.0, 0.0}  // sheen roughness
         };
 
     constexpr static uint N_UV_ROTATION_PACKS =
@@ -75,7 +80,7 @@ class MaterialUniforms
     std::array<std::array<float, 4>, N_UV_ROTATION_PACKS> 
         mTextureUvRotations = {
             std::array<float, 4>{0.0, 0.0, 0.0, 0.0}, // rotations for textures 0-3
-            std::array<float, 4>{0.0, 0.0, 0.0, 0.0}  // rotations for texture 4
+            std::array<float, 4>{0.0, 0.0, 0.0, 0.0}  // rotations for texture 4-6
         };
 
     Uniform mBaseColorUniform =
@@ -86,6 +91,9 @@ class MaterialUniforms
 
     Uniform mEmissivePackUniform =
         Uniform("u_emissivePack", bgfx::UniformType::Vec4);
+
+    Uniform mSheenFactorsPackUniform =
+        Uniform("u_sheenFactorsPack", bgfx::UniformType::Vec4);
 
     Uniform mSettingsUniform = Uniform("u_settings", bgfx::UniformType::Vec4);
 
@@ -98,6 +106,8 @@ class MaterialUniforms
         Uniform("u_normalTexUvScaleTrans", bgfx::UniformType::Vec4),
         Uniform("u_occlusionTexUvScaleTrans", bgfx::UniformType::Vec4),
         Uniform("u_emissiveTexUvScaleTrans", bgfx::UniformType::Vec4),
+        Uniform("u_sheenColorTexUvScaleTrans", bgfx::UniformType::Vec4),
+        Uniform("u_sheenRoughnessTexUvScaleTrans", bgfx::UniformType::Vec4)
     };
 
     Uniform mUvRotationPack0Uniform =
@@ -191,6 +201,11 @@ public:
         mEmissivePack[1] = m.emissiveColor().greenF();
         mEmissivePack[2] = m.emissiveColor().blueF();
         mEmissivePack[3] = m.emissiveStrength();
+
+        mSheenFactorsPack[0] = m.sheenColor().redF();
+        mSheenFactorsPack[1] = m.sheenColor().greenF();
+        mSheenFactorsPack[2] = m.sheenColor().blueF();
+        mSheenFactorsPack[3] = m.sheenRoughness();
     }
 
     void bind() const
@@ -198,6 +213,7 @@ public:
         mBaseColorUniform.bind(&mBaseColor);
         mFactorsPackUniform.bind(&mFactorsPack);
         mEmissivePackUniform.bind(&mEmissivePack);
+        mSheenFactorsPackUniform.bind(&mSheenFactorsPack);
         mSettingsUniform.bind(&mSettings);
         mAlphaPackUniform.bind(&mAlphaPack);
 

@@ -28,6 +28,7 @@ IMAGE2D_ARRAY_WO(u_specular, rgba32f, 1);
 uniform vec4 u_dataPack;
 #define roughness u_dataPack.x
 #define sourceResolution u_dataPack.y
+#define distributionModel int(u_dataPack.z)
 
 NUM_THREADS(8, 8, 1)
 void main()
@@ -66,7 +67,7 @@ void main()
             i,                              // current sample index
             SAMPLE_COUNT, 
             N, 
-            DISTRIBUTION_GGX,
+            distributionModel,
             roughness
         );
 

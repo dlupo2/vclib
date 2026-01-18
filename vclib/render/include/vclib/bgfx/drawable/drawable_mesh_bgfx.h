@@ -234,6 +234,7 @@ public:
                     settings.environment->bindTexture(BRDF_LUT, VCL_MRB_TEXTURE5);
                     settings.environment->bindTexture(IRRADIANCE, VCL_MRB_CUBEMAP0);
                     settings.environment->bindTexture(SPECULAR, VCL_MRB_CUBEMAP1);
+                    settings.environment->bindTexture(SHEEN, VCL_MRB_CUBEMAP2);
                 }
                 mMRB.bindVertexBuffers(mMRS);
                 mMRB.bindIndexBuffers(mMRS, i);

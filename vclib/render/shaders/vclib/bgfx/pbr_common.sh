@@ -47,6 +47,8 @@
 #define isNormalTextureAvailable(settings)            checkSetting(settings, VCL_PBR_TEXTURE_NORMAL)
 #define isOcclusionTextureAvailable(settings)         checkSetting(settings, VCL_PBR_TEXTURE_OCCLUSION)
 #define isEmissiveTextureAvailable(settings)          checkSetting(settings, VCL_PBR_TEXTURE_EMISSIVE)
+#define isSheenColorTextureAvailable(settings)        checkSetting(settings, VCL_PBR_TEXTURE_SHEEN_COLOR)
+#define isSheenRoughnessTextureAvailable(settings)    checkSetting(settings, VCL_PBR_TEXTURE_SHEEN_ROUGHNESS)
 
 // Lighting settings, may not be definitive
 
@@ -64,6 +66,7 @@
 
 #define DISTRIBUTION_LAMBERTIAN                     0u
 #define DISTRIBUTION_GGX                            1u
+#define DISTRIBUTION_CHARLIE                        2u
 
 #define TONEMAP_NONE                     0
 #define TONEMAP_BASIC                    1
@@ -71,6 +74,37 @@
 #define TONEMAP_ACES_HILL_EXPOSURE_BOOST 3
 #define TONEMAP_ACES_NARKOWICZ           4
 #define TONEMAP_KHRONOS_PBR_NEUTRAL      5
+
+
+
+// https://github.com/google/filament/blob/master/shaders/src/brdf.fs#L136
+float V_Ashikhmin(float NoL, float NoV)
+{
+    return clamp(1.0 / (4.0 * (NoL + NoV - NoL * NoV)), 0.0, 1.0);
+}
+
+// NDF
+float D_Ashikhmin(float NoH, float roughness)
+{
+    float alpha = roughness * roughness;
+    // Ashikhmin 2007, "Distribution-based BRDFs"
+    float a2 = alpha * alpha;
+    float cos2h = NoH * NoH;
+    float sin2h = 1.0 - cos2h;
+    float sin4h = sin2h * sin2h;
+    float cot2 = -cos2h / (a2 * sin2h);
+    return 1.0 / (PI * (4.0 * a2 + 1.0) * sin4h) * (4.0 * exp(cot2) + sin4h);
+}
+
+// NDF
+float D_Charlie(float sheenRoughness, float NoH)
+{
+    sheenRoughness = max(sheenRoughness, 0.000001); //clamp (0,1]
+    float invR = 1.0 / sheenRoughness;
+    float cos2h = NoH * NoH;
+    float sin2h = 1.0 - cos2h;
+    return (2.0 + invR) * pow(sin2h, invR * 0.5) / (2.0 * PI);
+}
 
 /**
  * @brief Computes the UV transformation matrix given scale, translation and rotation.
@@ -401,6 +435,24 @@ MicrofacetDistributionSample GGX(vec2 xi, float roughness)
     return ggx;
 }
 
+MicrofacetDistributionSample Charlie(vec2 xi, float roughness)
+{
+    MicrofacetDistributionSample charlie;
+
+    float alpha = roughness * roughness;
+    charlie.sinTheta = pow(xi.y, alpha / (2.0*alpha + 1.0));
+    charlie.cosTheta = sqrt(1.0 - charlie.sinTheta * charlie.sinTheta);
+    charlie.phi = 2.0 * PI * xi.x;
+
+    // evaluate Charlie pdf (for half vector)
+    charlie.pdf = D_Charlie(alpha, charlie.cosTheta);
+
+    // Apply the Jacobian to obtain a pdf that is parameterized by l
+    charlie.pdf /= 4.0;
+
+    return charlie;
+}
+
 /**
  * @brief Generates a sample vector from the hemisphere according to the specified microfacet distribution.
  * @param[in] sampleIndex: The index of the sample.
@@ -419,9 +471,13 @@ vec4 getImportanceSample(uint sampleIndex, uint sampleCount, vec3 N, uint distri
     {
         sample = Lambertian(Xi);
     }
-    else // if(distributionType == DISTRIBUTION_GGX)
+    else if(distributionType == DISTRIBUTION_GGX)
     {
         sample = GGX(Xi, roughness);
+    }
+    else // if(distributionType == DISTRIBUTION_CHARLIE)
+    {
+        sample = Charlie(Xi, roughness);
     }
 
     // from spherical coordinates to cartesian coordinates
@@ -880,6 +936,7 @@ vec4 pbrColorLights(
  * @param[in] metallic: The metalness of the fragment's material, ranges from 0 (dielectric) to 1 (metal). 
  * @param[in] occlusion: The ambient occlusion factor, ranges from 0 (fully occluded) to 1 (not occluded).
  * @param[in] emissive: The emissive color (RGB) of the fragment's material.
+ * @param[in] sheenLight: The sheen light color (RGB).
  * @param[in] exposure: The exposure factor.
  * @param[in] toneMapping: The tone mapping operator to use.
  * @return The color (RGB) reflected by the fragment, tone mapped and gamma corrected.
@@ -893,6 +950,8 @@ vec4 pbrColorIbl(
     float metallic,
     float occlusion,
     vec3 emissive,
+    vec3 sheenLight,
+    float albedoSheenScaling,
     float exposure,
     int toneMapping)
 {
@@ -908,6 +967,8 @@ vec4 pbrColorIbl(
     vec3 f_dielectric_brdf_ibl = mix(f_diffuse, f_specular_dielectric, dielectricFresnel);
 
     finalColor = mix(f_dielectric_brdf_ibl, f_metal_brdf_ibl, metallic);
+
+    finalColor = sheenLight + finalColor * albedoSheenScaling;
 
     finalColor *= occlusion;
 
