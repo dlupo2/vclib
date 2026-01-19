@@ -477,7 +477,10 @@ vec4 getImportanceSample(uint sampleIndex, uint sampleCount, vec3 N, uint distri
     }
     else // if(distributionType == DISTRIBUTION_CHARLIE)
     {
-        sample = Charlie(Xi, roughness);
+        if(roughness == 0.0)
+            sample = Charlie(Xi, 0.1);
+        else
+            sample = Charlie(Xi, roughness);
     }
 
     // from spherical coordinates to cartesian coordinates

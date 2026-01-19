@@ -72,7 +72,7 @@ void Environment::drawBackground(
     ProgramManager& pm = Context::instance().programManager();
 
     using enum TextureType;
-    bindTexture(SHEEN, VCL_MRB_CUBEMAP0);
+    bindTexture(RAW_CUBE, VCL_MRB_CUBEMAP0);
 
     bindDataUniform(float(toneMapping), exposure);
 
