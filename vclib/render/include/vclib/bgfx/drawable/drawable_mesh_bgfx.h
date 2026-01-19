@@ -216,45 +216,41 @@ public:
         }
 
         if (mMRS.isSurface(MRI::Surface::VISIBLE)) {
+            const Environment* env = settings.pbrSettings.environment;
+
             for (uint i = 0; i < mMRB.triangleChunksNumber(); ++i) {
                 uint64_t surfaceState  = state;
-                uint64_t materialState = mMRB.bindMaterials(
-                    mMRS, 
-                    i, 
-                    *this,
-                    settings.exposure, 
-                    settings.toneMapping,
-                    settings.environment->canDraw()
-                );
+                uint64_t materialState =
+                    mMRB.bindMaterials(mMRS, i, *this, settings.pbrSettings);
                 // Bind textures before vertex buffers!!
                 mMRB.bindTextures(mMRS, i, *this);
-                if(settings.pbrMode && settings.environment->canDraw())
-                {
-                    using enum Environment::TextureType;
-                    settings.environment->bindTexture(BRDF_LUT, VCL_MRB_TEXTURE5);
-                    settings.environment->bindTexture(IRRADIANCE, VCL_MRB_CUBEMAP0);
-                    settings.environment->bindTexture(SPECULAR, VCL_MRB_CUBEMAP1);
-                    settings.environment->bindTexture(SHEEN, VCL_MRB_CUBEMAP2);
+                if (settings.pbrSettings.pbrMode) {
+                    if (env !=  nullptr && env->canDraw()) {
+                        using enum Environment::TextureType;
+                        env->bindTexture(BRDF_LUT, VCL_MRB_TEXTURE5);
+                        env->bindTexture(IRRADIANCE, VCL_MRB_CUBEMAP0);
+                        env->bindTexture(SPECULAR, VCL_MRB_CUBEMAP1);
+                        env->bindTexture(SHEEN, VCL_MRB_CUBEMAP2);
+                    }
                 }
                 mMRB.bindVertexBuffers(mMRS);
                 mMRB.bindIndexBuffers(mMRS, i);
 
                 bindUniforms();
-                if(settings.pbrMode && settings.environment->canDraw())
-                {
-                    settings.environment->bindDataUniform(
-                        float(settings.environment->specularMips())
-                    );
+                if(settings.pbrSettings.pbrMode) {
+                    if (env != nullptr && env->canDraw()) {
+                        env->bindDataUniform(float(env->specularMips()));
+                    }
                 }
 
-                if (settings.pbrMode) {
+                if (settings.pbrSettings.pbrMode) {
                     surfaceState |= materialState;
                 }
 
                 bgfx::setState(surfaceState);
                 bgfx::setTransform(model.data());
 
-                if (settings.pbrMode) {
+                if (settings.pbrSettings.pbrMode) {
                     ProgramManager& pm = Context::instance().programManager();
 
                     bgfx::submit(

@@ -27,8 +27,8 @@
 #include <bx/allocator.h>
 #include <vclib/base.h>
 #include <vclib/bgfx/buffers.h>
-#include <vclib/bgfx/uniform.h>
 #include <vclib/bgfx/texture.h>
+#include <vclib/bgfx/uniform.h>
 
 namespace vcl {
 
@@ -38,41 +38,34 @@ namespace vcl {
  */
 class Environment
 {
-    enum class FileFormat
-    {
-        UNKNOWN,
-        HDR,
-        EXR,
-        KTX,
-        DDS
-    };
+    enum class FileFormat { UNKNOWN, HDR, EXR, KTX, DDS };
 
     static const uint BRDF_LU_TEXTURE_SIZE = 1024;
 
-    vcl::VertexBuffer mVertexBuffer;
-
-    uint8_t mCubeMips     = 0;
     uint8_t mSpecularMips = 0;
 
-    Uniform mHdrSamplerUniform = Uniform("s_hdr", bgfx::UniformType::Sampler);
-    Uniform mEnvCubeSamplerUniform =
+    const Uniform mHdrSamplerUniform =
+        Uniform("s_hdr", bgfx::UniformType::Sampler);
+    const Uniform mEnvCubeSamplerUniform =
         Uniform("s_env0", bgfx::UniformType::Sampler);
-    Uniform mIrradianceCubeSamplerUniform =
+    const Uniform mIrradianceCubeSamplerUniform =
         Uniform("s_irradiance", bgfx::UniformType::Sampler);
-    Uniform mSpecularCubeSamplerUniform =
+    const Uniform mSpecularCubeSamplerUniform =
         Uniform("s_specular", bgfx::UniformType::Sampler);
-    Uniform mBrdfLutSamplerUniform =
+    const Uniform mBrdfLutSamplerUniform =
         Uniform("s_brdf_lut", bgfx::UniformType::Sampler);
-    Uniform mSheenCubeSamplerUniform =
+    const Uniform mSheenCubeSamplerUniform =
         Uniform("s_sheen", bgfx::UniformType::Sampler);
-    Uniform mDataUniform = Uniform("u_dataPack", bgfx::UniformType::Vec4);
+    const Uniform mDataUniform = Uniform("u_dataPack", bgfx::UniformType::Vec4);
 
-    std::unique_ptr<Texture> mHdrTexture;
-    std::unique_ptr<Texture> mCubeMapTexture;
-    std::unique_ptr<Texture> mIrradianceTexture;
-    std::unique_ptr<Texture> mSpecularTexture;
-    std::unique_ptr<Texture> mBrdfLuTexture;
-    std::unique_ptr<Texture> mSheenTexture;
+    Texture mHdrTexture;
+    Texture mCubeMapTexture;
+    Texture mIrradianceTexture;
+    Texture mSpecularTexture;
+    Texture mBrdfLuTexture;
+    Texture mSheenTexture;
+
+    const vcl::VertexBuffer mVertexBuffer = fullScreenTriangle();
 
 public:
     /** @brief Types of environment textures managed by the Environment class. */
@@ -87,7 +80,7 @@ public:
 
     Environment() = default;
 
-    Environment(const std::string& imagePath);
+    Environment(const std::string& imagePath, uint viewId = UINT_NULL);
 
     Environment(const Environment& other) = delete;
 
@@ -106,7 +99,6 @@ public:
     void swap(Environment& other)
     {
         using std::swap;
-        swap(mCubeMips, other.mCubeMips);
         swap(mSpecularMips, other.mSpecularMips);
         swap(mHdrTexture, other.mHdrTexture);
         swap(mCubeMapTexture, other.mCubeMapTexture);
@@ -114,7 +106,6 @@ public:
         swap(mSpecularTexture, other.mSpecularTexture);
         swap(mBrdfLuTexture, other.mBrdfLuTexture);
         swap(mSheenTexture, other.mSheenTexture);
-        mVertexBuffer.swap(other.mVertexBuffer);
     }
 
     friend void swap(Environment& first, Environment& second)
@@ -122,66 +113,50 @@ public:
         first.swap(second);
     }
 
-    /** @brief Draws the environment in the background.
-    * @param[in] viewId: The view ID to draw the background in.
-    * @param[in] toneMapping: The tone mapping operator to use.
-    * @param[in] exposure: The exposure factor.
-    */
-    void drawBackground(const uint viewId, const int toneMapping, const float exposure);
+    void drawBackground(
+        const uint  viewId,
+        const int   toneMapping,
+        const float exposure);
 
-    /** @brief Binds the specified environment texture to the given texture stage.
-    * @param[in] type: The type of texture to bind (RAW_CUBE, IRRADIANCE, SPECULAR, BRDF_LUT).
-    * @param[in] stage: The texture stage to bind the texture to.
-    * @param[in] samplerFlags: The sampler flags to use when binding the texture.
-    */
-    void bindTexture(TextureType type, uint stage, uint samplerFlags = BGFX_SAMPLER_UVW_CLAMP) const;
+    void bindTexture(
+        TextureType type,
+        uint        stage,
+        uint        samplerFlags = BGFX_SAMPLER_UVW_CLAMP) const;
 
-    /** @brief Binds the provided data to the helper uniform (a vec4) handled by the Environment class.
-     * @param[in] d0: The first float data to bind. Default is 0.0f.
-     * @param[in] d1: The second float data to bind. Default is 0.0f.
-     * @param[in] d2: The third float data to bind. Default is 0.0f.
-     * @param[in] d3: The fourth float data to bind. Default is 0.0f.
-    */
-    void bindDataUniform(const float d0 = 0.0f, const float d1 = 0.0f, const float d2 = 0.0f, const float d3 = 0.0f) const;
+    void bindDataUniform(
+        const float d0 = 0.0f,
+        const float d1 = 0.0f,
+        const float d2 = 0.0f,
+        const float d3 = 0.0f) const;
 
-    /** @brief Checks if the environment is ready to be drawn.
+    /**
+     * @brief Checks if the environment is ready to be drawn.
      * @return true if the environment can be drawn, false otherwise.
-    */
-    bool canDraw() const { return mCubeMapTexture != nullptr; }
+     */
+    bool canDraw() const { return mCubeMapTexture.isValid(); }
 
-    /** @brief Gets the number of mipmap levels in the specular environment map.
+    /**
+     * @brief Gets the number of mipmap levels in the specular environment map.
      * @return The number of mipmap levels in the specular environment map.
-    */
+     */
     uint8_t specularMips() const { return mSpecularMips; }
 
 private:
-
-    /** @brief Determines the file format of the given image based on its extension.
-     * @param[in] imagePath: The path to the image file.
-     * @return The determined file format.
-     * Recognized formats are HDR, EXR, KTX, DDS otherwise the format is marked as UNKNOWN.
-    */
     FileFormat getFileFormat(const std::string& imagePath);
 
-    /** @brief Loads the image from the specified file path.
-     * @param[in] imagePath: The path to the image file.
-     * @return A pointer to the loaded ImageContainer, can be nullptr.
-    */
     bimg::ImageContainer* loadImage(std::string imagePath);
 
-    /** @brief Sets up the environment textures based on the loaded image.*/
-    void setTextures(const bimg::ImageContainer& image);
+    void setAndGenerateTextures(
+        const bimg::ImageContainer& image,
+        uint                        viewId);
 
-    /** @brief Generates the necessary environment textures (cubemap, irradiance map, specular map, BRDF LUT).
-     * @param[in] viewId: The view ID to use for texture generation.
-     */
-    void generateTextures(const bimg::ImageContainer& image);
+    void generateTextures(
+        const bimg::ImageContainer& image,
+        uint                        cubeSide,
+        uint8_t                     cubeMips,
+        uint                        viewId);
 
-    /** @brief Sets the buffer for the full-screen triangle for background
-     * drawing.*/
-    void fullScreenTriangle();
-
-
+    static vcl::VertexBuffer fullScreenTriangle();
 };
 
 } // namespace vcl
