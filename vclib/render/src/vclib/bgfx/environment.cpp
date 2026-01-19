@@ -434,13 +434,13 @@ void Environment::generateTextures(
             6
         );
 
-        mCubeMapTexture->bind(
+        mCubeMapTexture.bind(
             0,
             mEnvCubeSamplerUniform.handle(),
             BGFX_SAMPLER_UVW_CLAMP
         );
 
-        mSheenTexture->bindForCompute(
+        mSheenTexture.bindForCompute(
             1,
             mip,
             bgfx::Access::Write,
