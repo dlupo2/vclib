@@ -20,27 +20,54 @@
  * (https://www.mozilla.org/en-US/MPL/2.0/) for more details.                *
  ****************************************************************************/
 
-#ifndef VCL_RENDER_DRAWABLE_DRAW_OBJECT_SETTINGS_H
-#define VCL_RENDER_DRAWABLE_DRAW_OBJECT_SETTINGS_H
+#ifndef VCL_BGFX_DRAWABLE_DRAW_OBJECT_SETTINGS_BGFX_H
+#define VCL_BGFX_DRAWABLE_DRAW_OBJECT_SETTINGS_BGFX_H
 
-#ifdef VCLIB_RENDER_BACKEND_BGFX
-#include <vclib/bgfx/drawable/draw_object_settings_bgfx.h>
-#endif
-
-#ifdef VCLIB_RENDER_BACKEND_OPENGL2
-#include <vclib/opengl2/drawable/draw_object_settings_opengl2.h>
-#endif
+#include <vclib/base.h>
+#include <vclib/bgfx/environment.h>
 
 namespace vcl {
 
-#ifdef VCLIB_RENDER_BACKEND_BGFX
-using DrawObjectSettings = DrawObjectSettingsBGFX;
-#endif
+struct PBRSettings
+{
+    enum class ToneMapping
+    {
+        NONE,
+        BASIC,
+        ACES_HILL,
+        ACES_HILL_EXPOSURE_BOOST,
+        ACES_NARKOWICZ,
+        KHRONOS_PBR_NEUTRAL
+    };
 
-#ifdef VCLIB_RENDER_BACKEND_OPENGL2
-using DrawObjectSettings = DrawObjectSettingsOpenGL2;
-#endif
+    /**< @brief Option that tells whether the object must be drawn in PBR mode.
+     */
+    bool pbrMode = false;
+
+    /**< @brief The exposure value to use in PBR mode. */
+    float exposure = 1.0f;
+
+    /**< @brief The tone mapping operator to use in PBR mode. */
+    int toneMapping = 2;
+
+    const Environment* environment = nullptr;
+};
+
+/**
+ * @brief A simple struct containing the settings to draw a drawable object
+ * in a bgfx canvas.
+ */
+struct DrawObjectSettingsBGFX
+{
+    /**< @brief The object ID to assign to the object. */
+    uint objectId = 0;
+
+    /**< @brief The view ID on which to draw the object. */
+    uint viewId = 0;
+
+    PBRSettings pbrSettings;
+};
 
 } // namespace vcl
 
-#endif // VCL_RENDER_DRAWABLE_DRAW_OBJECT_SETTINGS_H
+#endif // VCL_BGFX_DRAWABLE_DRAW_OBJECT_SETTINGS_BGFX_H

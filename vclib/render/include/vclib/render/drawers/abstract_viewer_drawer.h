@@ -48,23 +48,8 @@ class AbstractViewerDrawer : public ViewProjEventDrawer
     using DRA  = ViewProjEventDrawer::DRA;
 
     bool mReadRequested = false;
-    bool mPBRMode       = false;
 
-public:
-
-    enum class ToneMapping
-    {
-        NONE,
-        BASIC,
-        ACES_HILL,
-        ACES_HILL_EXPOSURE_BOOST,
-        ACES_NARKOWICZ,
-        KHRONOS_PBR_NEUTRAL
-    };
-
-private:
-
-    ToneMapping mToneMapping = ToneMapping::ACES_HILL;
+    PBRSettings::ToneMapping mToneMapping = PBRSettings::ToneMapping::ACES_HILL;
 
     float mExposure = 1.0f;
 
@@ -138,14 +123,6 @@ public:
         Base::fitScene(sceneCenter, sceneRadius);
     }
 
-    bool isPBREnabled() const { return mPBRMode; }
-
-    void setPBR(bool enable) { mPBRMode = enable; }
-
-    void enablePBR() { setPBR(true); }
-
-    void disablePBR() { setPBR(false); }
-
     void fitView()
     {
         Point3f sceneCenter = mDrawList->center().cast<float>();
@@ -158,9 +135,9 @@ public:
         // to be implemented by derived classes if needed
     }
 
-    ToneMapping getToneMapping() const { return mToneMapping; }
+    PBRSettings::ToneMapping getToneMapping() const { return mToneMapping; }
 
-    void setToneMapping(ToneMapping tm) { mToneMapping = tm; }
+    void setToneMapping(PBRSettings::ToneMapping tm) { mToneMapping = tm; }
 
     float getExposure() const { return mExposure; }
 
