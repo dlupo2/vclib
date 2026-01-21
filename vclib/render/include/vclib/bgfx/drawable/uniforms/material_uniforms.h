@@ -139,7 +139,8 @@ public:
         bool                                vertexColorAvailable,
         const std::array<bool, N_TEXTURES>& textureAvailable,
         bool                                vertexTangentAvailable,
-        const PBRSettings&                  pbrSettings)
+        const PBRViewerSettings&            pbrSettings,
+        const Environment*                  environment)
     {
         uint pbrSettingBits = 0;
 
@@ -155,8 +156,7 @@ public:
             mAlphaPack[0] = m.alphaCutoff();
         }
 
-        if (pbrSettings.environment != nullptr &&
-            pbrSettings.environment->canDraw()) {
+        if (environment != nullptr && environment->canDraw()) {
             pbrSettingBits |= 1 << VCL_PBR_IMAGE_BASED_LIGHTING;
         }
 
@@ -183,7 +183,8 @@ public:
         }
 
         mSettings[1] = Uniform::uintBitsToFloat(textureSettings);
-        mSettings[2] = static_cast<float>(pbrSettings.toneMapping);
+        mSettings[2] =
+            Uniform::uintBitsToFloat(toUnderlying(pbrSettings.toneMapping));
         mSettings[3] = pbrSettings.exposure;
 
         mBaseColor[0] = m.baseColor().redF();

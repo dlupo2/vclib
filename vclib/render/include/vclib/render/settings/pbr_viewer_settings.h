@@ -20,27 +20,39 @@
  * (https://www.mozilla.org/en-US/MPL/2.0/) for more details.                *
  ****************************************************************************/
 
-#ifndef VCL_RENDER_SETTINGS_DRAW_OBJECT_SETTINGS_H
-#define VCL_RENDER_SETTINGS_DRAW_OBJECT_SETTINGS_H
-
-#ifdef VCLIB_RENDER_BACKEND_BGFX
-#include <vclib/bgfx/settings/draw_object_settings_bgfx.h>
-#endif
-
-#ifdef VCLIB_RENDER_BACKEND_OPENGL2
-#include <vclib/opengl2/settings/draw_object_settings_opengl2.h>
-#endif
+#ifndef VCL_RENDER_SETTINGS_PBR_VIEWER_SETTINGS_H
+#define VCL_RENDER_SETTINGS_PBR_VIEWER_SETTINGS_H
 
 namespace vcl {
 
-#ifdef VCLIB_RENDER_BACKEND_BGFX
-using DrawObjectSettings = DrawObjectSettingsBGFX;
-#endif
+struct PBRViewerSettings
+{
+    enum class ToneMapping
+    {
+        NONE,
+        BASIC,
+        ACES_HILL,
+        ACES_HILL_EXPOSURE_BOOST,
+        ACES_NARKOWICZ,
+        KHRONOS_PBR_NEUTRAL
+    };
 
-#ifdef VCLIB_RENDER_BACKEND_OPENGL2
-using DrawObjectSettings = DrawObjectSettingsOpenGL2;
-#endif
+    /**
+     * @brief Option that tells whether the viewer be set in PBR mode or not.
+     */
+    bool pbrMode = false;
+
+    /**
+     * @brief The exposure value to use in PBR mode.
+     */
+    float exposure = 1.0f;
+
+    /**
+     * @brief The tone mapping operator to use in PBR mode.
+     */
+    ToneMapping toneMapping = ToneMapping::ACES_HILL;
+};
 
 } // namespace vcl
 
-#endif // VCL_RENDER_SETTINGS_DRAW_OBJECT_SETTINGS_H
+#endif // VCL_RENDER_SETTINGS_PBR_VIEWER_SETTINGS_H

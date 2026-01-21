@@ -26,8 +26,8 @@
 #include <vclib/render/drawers/abstract_viewer_drawer.h>
 
 #include <vclib/bgfx/context.h>
-#include <vclib/bgfx/environment.h>
 #include <vclib/bgfx/drawable/uniforms/directional_light_uniforms.h>
+#include <vclib/bgfx/environment.h>
 
 namespace vcl {
 
@@ -38,12 +38,12 @@ class ViewerDrawerBGFX : public AbstractViewerDrawer<ViewProjEventDrawer>
 
     DirectionalLightUniforms mDirectionalLightUniforms;
 
-    Environment mPanorama = Environment("");
-
     // flags
     bool mStatsEnabled = false;
 
-    bool mPBRMode       = false;
+    PBRViewerSettings mPBRSettings;
+
+    Environment mPanorama = Environment("");
 
 public:
     ViewerDrawerBGFX(uint width = 1024, uint height = 768) :
@@ -60,38 +60,39 @@ public:
         ParentViewer::setDrawableObjectVector(v);
     }
 
-    bool isPBREnabled() const { return mPBRMode; }
+    PBRViewerSettings& pbrViewerSettings() { return mPBRSettings; }
 
-    void setPBR(bool enable) { mPBRMode = enable; }
+    const PBRViewerSettings& pbrViewerSettings() const { return mPBRSettings; }
+
+    bool isPBREnabled() const { return mPBRSettings.pbrMode; }
+
+    void setPBR(bool enable) { mPBRSettings.pbrMode = enable; }
 
     void enablePBR() { setPBR(true); }
 
     void disablePBR() { setPBR(false); }
+
+    void setPanorama(const std::string& panorama)
+    {
+        mPanorama = Environment(panorama, ParentViewer::canvasViewId());
+    }
 
     void onDrawContent(uint viewId) override
     {
         DrawObjectSettings settings;
         settings.viewId = viewId;
 
-        settings.pbrSettings.pbrMode = isPBREnabled();
+        settings.pbrSettings = mPBRSettings;
 
-        settings.pbrSettings.exposure = ParentViewer::getExposure();
-
-        settings.pbrSettings.toneMapping =
-            toUnderlying(ParentViewer::getToneMapping());
-
-        settings.pbrSettings.environment = &mPanorama;
+        settings.environment = &mPanorama;
 
         setViewTransform(viewId);
 
         mDirectionalLightUniforms.updateLight(ParentViewer::light());
         mDirectionalLightUniforms.bind();
 
-        if(settings.pbrSettings.pbrMode)
-            mPanorama.drawBackground(
-                settings.viewId,
-                settings.pbrSettings.toneMapping,
-                settings.pbrSettings.exposure);
+        if (settings.pbrSettings.pbrMode)
+            mPanorama.drawBackground(settings.viewId, settings.pbrSettings);
 
         ParentViewer::drawableObjectVector().draw(settings);
     }
@@ -137,11 +138,6 @@ public:
             ParentViewer::readDepthRequest(x, y, homogeneousNDC);
         }
     }
-
-    void setPanorama(const std::string& panorama)
-    {
-        mPanorama = Environment(panorama, ParentViewer::canvasViewId());
-    } 
 
 private:
     void setViewTransform(uint viewId)

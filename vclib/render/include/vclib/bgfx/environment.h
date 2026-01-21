@@ -29,10 +29,13 @@
 #include <vclib/bgfx/buffers.h>
 #include <vclib/bgfx/texture.h>
 #include <vclib/bgfx/uniform.h>
+#include <vclib/render/settings/pbr_viewer_settings.h>
 
 namespace vcl {
 
-/** @brief A class representing an environment for PBR rendering.
+/**
+ * @brief A class representing an environment for PBR rendering.
+ *
  * It manages the loading and setup of environment maps, including
  * HDR images, cubemaps, irradiance maps, specular maps, and BRDF LUTs.
  */
@@ -113,10 +116,7 @@ public:
         first.swap(second);
     }
 
-    void drawBackground(
-        const uint  viewId,
-        const int   toneMapping,
-        const float exposure);
+    void drawBackground(uint viewId, const PBRViewerSettings& settings) const;
 
     void bindTexture(
         TextureType type,
@@ -146,9 +146,7 @@ private:
 
     bimg::ImageContainer* loadImage(std::string imagePath);
 
-    void setAndGenerateTextures(
-        const bimg::ImageContainer& image,
-        uint                        viewId);
+    void setAndGenerateTextures(const bimg::ImageContainer& image, uint viewId);
 
     void generateTextures(
         const bimg::ImageContainer& image,
