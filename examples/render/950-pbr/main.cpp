@@ -53,7 +53,7 @@ int main(int argc, char** argv)
         "/gltf/CompareSheen/CompareSheen.gltf"
     };
 
-    uint selectedExample = COMPARE_SHEEN;
+    uint selectedExample = DAMAGED_HELMET;
 
     enum PanoramasExamples {
         COLOSSEUM_HDR,
@@ -95,6 +95,12 @@ int main(int argc, char** argv)
         else if (type == EMISSIVE) {
             typeName = "emissive";
         }
+        else if (type == SHEEN_COLOR) {
+            typeName = "sheenColor";
+        }
+        else if (type == SHEEN_ROUGHNESS) {
+            typeName = "sheenRoughness";
+        }
 
         std::cout << "  " << typeName << "Texture: ";
         if (!texture.isNull()) {
@@ -105,6 +111,9 @@ int main(int argc, char** argv)
                       << std::endl;
             std::cout << "    wrapU: " << int(texture.wrapU()) << std::endl;
             std::cout << "    wrapV: " << int(texture.wrapV()) << std::endl;
+            std::cout << "    scale: " << texture.scale() << std::endl;
+            std::cout << "    translation: " << texture.offset() << std::endl;
+            std::cout << "    rotation: " << texture.rotation() << std::endl;
         }
         else {
             std::cout << "null" << std::endl;
@@ -127,11 +136,17 @@ int main(int argc, char** argv)
             std::cout << "  normalScale: " << mat.normalScale() << std::endl;
             std::cout << "  occlusionStrength: " << mat.occlusionStrength()
                       << std::endl;
+            std::cout << "  emissiveStrength: " << mat.emissiveStrength()
+                      << std::endl;
+            std::cout << "  sheenColorFactor: " << mat.sheenColor() << std::endl;
+            std::cout << "  sheenRoughnessFactor: " << mat.sheenRoughness() << std::endl;
             printTextureInfo(mat, BASE_COLOR);
             printTextureInfo(mat, METALLIC_ROUGHNESS);
             printTextureInfo(mat, NORMAL);
             printTextureInfo(mat, OCCLUSION);
             printTextureInfo(mat, EMISSIVE);
+            printTextureInfo(mat, SHEEN_COLOR);
+            printTextureInfo(mat, SHEEN_ROUGHNESS);
             std::cout << "  ------------------------" << std::endl;
         }
         std::cout << "------------------------" << std::endl;
