@@ -20,16 +20,21 @@
  * (https://www.mozilla.org/en-US/MPL/2.0/) for more details.                *
  ****************************************************************************/
 
-#ifndef VCL_BGFX_ENVIRONMENT_H
-#define VCL_BGFX_ENVIRONMENT_H
+#ifndef VCL_BGFX_DRAWABLE_DRAWABLE_ENVIRONMENT_H
+#define VCL_BGFX_DRAWABLE_DRAWABLE_ENVIRONMENT_H
 
-#include <bgfx/bgfx.h>
-#include <bx/allocator.h>
-#include <vclib/base.h>
+#include "uniforms/drawable_environment_uniforms.h"
+
 #include <vclib/bgfx/buffers.h>
 #include <vclib/bgfx/texture.h>
 #include <vclib/bgfx/uniform.h>
+#include <vclib/render/drawable/drawable_object.h>
 #include <vclib/render/settings/pbr_viewer_settings.h>
+
+#include <vclib/base.h>
+
+#include <bgfx/bgfx.h>
+#include <bx/allocator.h>
 
 namespace vcl {
 
@@ -39,7 +44,7 @@ namespace vcl {
  * It manages the loading and setup of environment maps, including
  * HDR images, cubemaps, irradiance maps, specular maps, and BRDF LUTs.
  */
-class Environment
+class DrawableEnvironment
 {
     enum class FileFormat { UNKNOWN, HDR, EXR, KTX, DDS };
 
@@ -59,7 +64,8 @@ class Environment
         Uniform("s_brdf_lut", bgfx::UniformType::Sampler);
     const Uniform mSheenCubeSamplerUniform =
         Uniform("s_sheen", bgfx::UniformType::Sampler);
-    const Uniform mDataUniform = Uniform("u_dataPack", bgfx::UniformType::Vec4);
+
+    DrawableEnvironmentUniforms mDataUniforms;
 
     Texture mHdrTexture;
     Texture mCubeMapTexture;
@@ -71,7 +77,7 @@ class Environment
     const vcl::VertexBuffer mVertexBuffer = fullScreenTriangle();
 
 public:
-    /** @brief Types of environment textures managed by the Environment class. */
+    /** @brief Types of environment textures managed by the DrawableEnvironment class. */
     enum class TextureType
     {
         RAW_CUBE,
@@ -81,25 +87,25 @@ public:
         SHEEN
     };
 
-    Environment() = default;
+    DrawableEnvironment() = default;
 
-    Environment(const std::string& imagePath, uint viewId = UINT_NULL);
+    DrawableEnvironment(const std::string& imagePath, uint viewId = UINT_NULL);
 
-    Environment(const Environment& other) = delete;
+    DrawableEnvironment(const DrawableEnvironment& other) = delete;
 
-    Environment(Environment&& other) { swap(other); }
+    DrawableEnvironment(DrawableEnvironment&& other) { swap(other); }
 
-    ~Environment() = default;
+    ~DrawableEnvironment() = default;
 
-    Environment& operator=(const Environment& other) = delete;
+    DrawableEnvironment& operator=(const DrawableEnvironment& other) = delete;
 
-    Environment& operator=(Environment&& other)
+    DrawableEnvironment& operator=(DrawableEnvironment&& other)
     {
         swap(other);
         return *this;
     }
 
-    void swap(Environment& other)
+    void swap(DrawableEnvironment& other)
     {
         using std::swap;
         swap(mSpecularMips, other.mSpecularMips);
@@ -111,7 +117,7 @@ public:
         swap(mSheenTexture, other.mSheenTexture);
     }
 
-    friend void swap(Environment& first, Environment& second)
+    friend void swap(DrawableEnvironment& first, DrawableEnvironment& second)
     {
         first.swap(second);
     }
@@ -159,4 +165,4 @@ private:
 
 } // namespace vcl
 
-#endif // VCL_BGFX_ENVIRONMENT_H
+#endif // VCL_BGFX_DRAWABLE_DRAWABLE_ENVIRONMENT_H

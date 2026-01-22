@@ -20,10 +20,10 @@
  * (https://www.mozilla.org/en-US/MPL/2.0/) for more details.                *
 ****************************************************************************/
 
-#include <vclib/bgfx/drawable/drawable_background/uniforms.sh>
+#include <vclib/bgfx/drawable/uniforms/drawable_environment_uniforms.sh>
 
 SAMPLER2D(s_hdr, 0);                     // bound with setTexture()
-IMAGE2D_ARRAY_WO(u_cubemap, rgba32f, 1); // bound with setImage() as RW
+IMAGE2D_ARRAY_WO(i_cubemap, rgba32f, 1); // bound with setImage() as RW
 
 NUM_THREADS(8, 8, 1) // 8x8 threads per threadgroup
 void main()
@@ -36,7 +36,7 @@ void main()
     ivec2 pixel = gid.xy;
     int face    = gid.z;
 
-    ivec3 dims  = imageSize(u_cubemap);
+    ivec3 dims  = imageSize(i_cubemap);
     int size    = dims.x;  // cube is size×size×6
 
     // in case of an out of bounds thread
@@ -57,5 +57,5 @@ void main()
     vec4 hdrColor = texture2DLod(s_hdr, equiUV, 0); // texture2D not supported in compute shaders
 
     // Write to cubemap layer
-    imageStore(u_cubemap, ivec3(pixel.x, pixel.y, face), hdrColor);
+    imageStore(i_cubemap, ivec3(pixel.x, pixel.y, face), hdrColor);
 }

@@ -20,17 +20,17 @@
  * (https://www.mozilla.org/en-US/MPL/2.0/) for more details.                *
  ****************************************************************************/
 
+#include <vclib/bgfx/drawable/drawable_environment.h>
+
+#include <vclib/bgfx/context.h>
+#include <vclib/bgfx/drawable/mesh/mesh_render_buffers_macros.h>
+
+#include <bimg/bimg.h>
+#include <bimg/decode.h>
 #include <bx/bx.h>
 #include <bx/file.h>
 #include <bx/math.h>
 #include <bx/readerwriter.h>
-
-#include <bimg/bimg.h>
-#include <bimg/decode.h>
-
-#include <vclib/bgfx/context.h>
-#include <vclib/bgfx/drawable/mesh/mesh_render_buffers_macros.h>
-#include <vclib/bgfx/environment.h>
 
 namespace vcl {
 
@@ -44,7 +44,9 @@ static const float VERTICES[9] {-3, -1, 1, 1, -1, 1, 1, 3, 1};
 
 static bx::DefaultAllocator bxAllocator;
 
-Environment::Environment(const std::string& imagePath, uint viewId)
+DrawableEnvironment::DrawableEnvironment(
+    const std::string& imagePath,
+    uint               viewId)
 {
     bimg::ImageContainer* image = loadImage(imagePath);
     if (image) {
@@ -60,25 +62,25 @@ Environment::Environment(const std::string& imagePath, uint viewId)
  * @param[in] settings: The tone mapping operator to use.
  * @param[in] exposure: The exposure factor.
  */
-void Environment::drawBackground(uint viewId, const PBRViewerSettings& settings)
-    const
+void DrawableEnvironment::drawBackground(
+    uint                     viewId,
+    const PBRViewerSettings& settings) const
 {
-    if (!canDraw())
-        return;
+    if (settings.pbrMode && settings.renderBackground && canDraw()) {
+        using enum VertFragProgram;
+        ProgramManager& pm = Context::instance().programManager();
 
-    using enum VertFragProgram;
-    ProgramManager& pm = Context::instance().programManager();
+        using enum TextureType;
+        bindTexture(RAW_CUBE, VCL_MRB_CUBEMAP0);
 
-    using enum TextureType;
-    bindTexture(RAW_CUBE, VCL_MRB_CUBEMAP0);
+        bindDataUniform(float(settings.toneMapping), settings.exposure);
 
-    bindDataUniform(float(settings.toneMapping), settings.exposure);
+        mVertexBuffer.bindVertex(0);
 
-    mVertexBuffer.bindVertex(0);
+        bgfx::setState(BGFX_STATE_WRITE_MASK | BGFX_STATE_DEPTH_TEST_LEQUAL);
 
-    bgfx::setState(BGFX_STATE_WRITE_MASK | BGFX_STATE_DEPTH_TEST_LEQUAL);
-
-    bgfx::submit(viewId, pm.getProgram<DRAWABLE_BACKGROUND_PBR>());
+        bgfx::submit(viewId, pm.getProgram<DRAWABLE_BACKGROUND_PBR>());
+    }
 }
 
 /**
@@ -88,8 +90,10 @@ void Environment::drawBackground(uint viewId, const PBRViewerSettings& settings)
  * @param[in] stage: The texture stage to bind the texture to.
  * @param[in] samplerFlags: The sampler flags to use when binding the texture.
  */
-void Environment::bindTexture(TextureType type, uint stage, uint samplerFlags)
-    const
+void DrawableEnvironment::bindTexture(
+    TextureType type,
+    uint        stage,
+    uint        samplerFlags) const
 {
     using enum TextureType;
     switch (type) {
@@ -125,14 +129,14 @@ void Environment::bindTexture(TextureType type, uint stage, uint samplerFlags)
  * @param[in] d2: The third float data to bind. Default is 0.0f.
  * @param[in] d3: The fourth float data to bind. Default is 0.0f.
  */
-void Environment::bindDataUniform(
+void DrawableEnvironment::bindDataUniform(
     const float d0,
     const float d1,
     const float d2,
     const float d3) const
 {
-    std::array<float, 4> data = {d0, d1, d2, d3};
-    mDataUniform.bind(&data);
+    mDataUniforms.update(d0, d1, d2, d3);
+    mDataUniforms.bind();
 }
 
 /**
@@ -144,9 +148,10 @@ void Environment::bindDataUniform(
  * @param[in] imagePath: The path to the image file.
  * @return The determined file format.
  */
-Environment::FileFormat Environment::getFileFormat(const std::string& imagePath)
+DrawableEnvironment::FileFormat DrawableEnvironment::getFileFormat(
+    const std::string& imagePath)
 {
-    using enum Environment::FileFormat;
+    using enum DrawableEnvironment::FileFormat;
     if (imagePath.find(".hdr", imagePath.length() - 4) != std::string::npos)
         return HDR;
     if (imagePath.find(".exr", imagePath.length() - 4) != std::string::npos)
@@ -163,11 +168,11 @@ Environment::FileFormat Environment::getFileFormat(const std::string& imagePath)
  * @param[in] imagePath: The path to the image file.
  * @return A pointer to the loaded ImageContainer, can be nullptr.
  */
-bimg::ImageContainer* Environment::loadImage(std::string imagePath)
+bimg::ImageContainer* DrawableEnvironment::loadImage(std::string imagePath)
 {
     /* Code from bimg texturec */
 
-    using enum Environment::FileFormat;
+    using enum DrawableEnvironment::FileFormat;
     FileFormat sourceFormat = getFileFormat(imagePath);
 
     if (sourceFormat == UNKNOWN)
@@ -222,7 +227,7 @@ bimg::ImageContainer* Environment::loadImage(std::string imagePath)
  *
  * @param[in] image: The image container holding the environment map data.
  */
-void Environment::setAndGenerateTextures(
+void DrawableEnvironment::setAndGenerateTextures(
     const bimg::ImageContainer& image,
     uint                        viewId)
 {
@@ -315,10 +320,11 @@ void Environment::setAndGenerateTextures(
 /**
  * @brief Generates the necessary environment textures (cubemap, irradiance
  * map, specular map, BRDF LUT).
- *  * This function is called by setAndGenerateTextures after setting up the
+ *
+ * This function is called by setAndGenerateTextures after setting up the
  * initial textures.
  */
-void Environment::generateTextures(
+void DrawableEnvironment::generateTextures(
     const bimg::ImageContainer& image,
     uint                        cubeSide,
     uint8_t                     cubeMips,
@@ -474,7 +480,7 @@ void Environment::generateTextures(
  * @brief Sets and returns the buffer for the full-screen triangle for
  * background drawing.
  */
-vcl::VertexBuffer Environment::fullScreenTriangle()
+vcl::VertexBuffer DrawableEnvironment::fullScreenTriangle()
 {
     vcl::VertexBuffer vb;
     vb.create(

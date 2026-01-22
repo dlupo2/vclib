@@ -20,10 +20,10 @@
  * (https://www.mozilla.org/en-US/MPL/2.0/) for more details.                *
 ****************************************************************************/
 
-#include <vclib/bgfx/drawable/drawable_background/uniforms.sh>
+#include <vclib/bgfx/drawable/uniforms/drawable_environment_uniforms.sh>
 
 SAMPLERCUBE(s_env0, 0);
-IMAGE2D_ARRAY_WO(u_specular, rgba32f, 1);
+IMAGE2D_ARRAY_WO(i_specular, rgba32f, 1);
 
 uniform vec4 u_dataPack;
 #define roughness u_dataPack.x
@@ -41,7 +41,7 @@ void main()
     ivec2 pixel = gid.xy;
     int face    = gid.z;
 
-    ivec3 dims  = imageSize(u_specular);
+    ivec3 dims  = imageSize(i_specular);
     int size    = dims.x;  // cube is size×size×6
 
     // in case of an out of bounds thread
@@ -91,5 +91,5 @@ void main()
     }
     prefilteredColor /= totalWeight;
 
-    imageStore(u_specular, ivec3(pixel.x, pixel.y, face), vec4(prefilteredColor, 1.0));
+    imageStore(i_specular, ivec3(pixel.x, pixel.y, face), vec4(prefilteredColor, 1.0));
 }

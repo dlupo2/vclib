@@ -23,7 +23,7 @@
 $input a_position
 $output v_texcoord0
 
-#include <vclib/bgfx/drawable/drawable_background/uniforms.sh>
+#include <vclib/bgfx/drawable/uniforms/drawable_environment_uniforms.sh>
 
 void main()
 {

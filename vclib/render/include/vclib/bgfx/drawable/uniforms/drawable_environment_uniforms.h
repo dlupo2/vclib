@@ -20,59 +20,42 @@
  * (https://www.mozilla.org/en-US/MPL/2.0/) for more details.                *
  ****************************************************************************/
 
-#ifndef VCL_RENDER_SETTINGS_PBR_VIEWER_SETTINGS_H
-#define VCL_RENDER_SETTINGS_PBR_VIEWER_SETTINGS_H
+#ifndef VCL_BGFX_DRAWABLE_UNIFORMS_DRAWABLE_ENVIRONMENT_UNIFORMS_H
+#define VCL_BGFX_DRAWABLE_UNIFORMS_DRAWABLE_ENVIRONMENT_UNIFORMS_H
 
-#include <vclib/base.h>
+#include <vclib/bgfx/uniform.h>
 
 namespace vcl {
 
-struct PBRViewerSettings
+class DrawableEnvironmentUniforms
 {
-    enum class ToneMapping
-    {
-        NONE,
-        BASIC,
-        ACES_HILL,
-        ACES_HILL_EXPOSURE_BOOST,
-        ACES_NARKOWICZ,
-        KHRONOS_PBR_NEUTRAL,
-        COUNT
+    mutable std::array<float, 4> mData = {
+        0.0, // exposure
+        0.0, // 16 bits tone mapping, 16 bits specular mip levels
+        0.0, // roughness
+        0.0  // cube side
     };
 
-    static constexpr const char*
-        TONE_MAPPING_STRINGS[toUnderlying(ToneMapping::COUNT)] = {
-            "None",
-            "Basic",
-            "ACES Hill",
-            "ACES Hill Exposure Boost",
-            "ACES Narkowicz",
-            "Khronos PBR Neutral"};
+    // todo: change name of the uniform to something more meaningful
+    Uniform mDataUniform = Uniform("u_dataPack", bgfx::UniformType::Vec4);
 
-    /**
-     * @brief Option that tells whether the viewer be set in PBR mode or not.
-     *
-     * All the options below are used only if this flag is set to true.
-     */
-    bool pbrMode = false;
+public:
+    DrawableEnvironmentUniforms() = default;
 
-    /**
-     * @brief Option that tells whether to render the background panorama or
-     * not.
-     */
-    bool renderBackground = true;
+    void update(float a, float b, float c, float d) const
+    {
+        mData[0] = a;
+        mData[1] = b;
+        mData[2] = c;
+        mData[3] = d;
+    }
 
-    /**
-     * @brief The exposure value to use in PBR mode.
-     */
-    float exposure = 1.0f;
-
-    /**
-     * @brief The tone mapping operator to use in PBR mode.
-     */
-    ToneMapping toneMapping = ToneMapping::ACES_HILL;
+    void bind() const
+    {
+        mDataUniform.bind(mData.data());
+    }
 };
 
 } // namespace vcl
 
-#endif // VCL_RENDER_SETTINGS_PBR_VIEWER_SETTINGS_H
+#endif // VCL_BGFX_DRAWABLE_UNIFORMS_DRAWABLE_ENVIRONMENT_UNIFORMS_H
