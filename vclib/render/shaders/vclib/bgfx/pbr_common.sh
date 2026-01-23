@@ -68,12 +68,12 @@
 #define DISTRIBUTION_GGX                            1u
 #define DISTRIBUTION_CHARLIE                        2u
 
-#define TONEMAP_NONE                     0
-#define TONEMAP_BASIC                    1
-#define TONEMAP_ACES_HILL                2
-#define TONEMAP_ACES_HILL_EXPOSURE_BOOST 3
-#define TONEMAP_ACES_NARKOWICZ           4
-#define TONEMAP_KHRONOS_PBR_NEUTRAL      5
+#define TONEMAP_NONE                     0u
+#define TONEMAP_BASIC                    1u
+#define TONEMAP_ACES_HILL                2u
+#define TONEMAP_ACES_HILL_EXPOSURE_BOOST 3u
+#define TONEMAP_ACES_NARKOWICZ           4u
+#define TONEMAP_KHRONOS_PBR_NEUTRAL      5u
 
 
 
@@ -286,7 +286,7 @@ vec3 toneMapBasic(vec3 color)
  * @param[in] mapping: The tone mapping operator to use.
  * @return The tone mapped color.
  */
-vec3 toneMap(vec3 color, int mapping)
+vec3 toneMap(vec3 color, uint mapping)
 {
     switch(mapping)
     {
@@ -852,7 +852,7 @@ vec4 pbrColorLights(
     float roughness,
     vec3 emissive,
     float exposure,
-    int toneMapping)
+    uint toneMapping)
 {
     vec3 finalColor = vec3_splat(0.0);
     vec3 f0_dielectric = vec3_splat(0.04);
@@ -956,7 +956,7 @@ vec4 pbrColorIbl(
     vec3 sheenLight,
     float albedoSheenScaling,
     float exposure,
-    int toneMapping)
+    uint toneMapping)
 {
     vec3 finalColor = vec3_splat(0.0);
 

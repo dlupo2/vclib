@@ -73,13 +73,14 @@ void DrawableEnvironment::drawBackground(
         using enum TextureType;
         bindTexture(RAW_CUBE, VCL_MRB_CUBEMAP0);
 
-        bindDataUniform(float(settings.toneMapping), settings.exposure);
+        mDataUniforms.updateToneMapping(settings.toneMapping);
+        mDataUniforms.updateExposure(settings.exposure);
 
         mVertexBuffer.bindVertex(0);
 
         bgfx::setState(BGFX_STATE_WRITE_MASK | BGFX_STATE_DEPTH_TEST_LEQUAL);
 
-        bgfx::submit(viewId, pm.getProgram<DRAWABLE_BACKGROUND_PBR>());
+        bgfx::submit(viewId, pm.getProgram<DRAWABLE_ENVIRONMENT_PBR>());
     }
 }
 
@@ -118,25 +119,6 @@ void DrawableEnvironment::bindTexture(
     		stage, mSheenCubeSamplerUniform.handle(), samplerFlags);
     	break;
     }
-}
-
-/**
- * @brief Binds the provided data to the helper uniform (a vec4) handled by the
- * Environment class.
- *
- * @param[in] d0: The first float data to bind. Default is 0.0f.
- * @param[in] d1: The second float data to bind. Default is 0.0f.
- * @param[in] d2: The third float data to bind. Default is 0.0f.
- * @param[in] d3: The fourth float data to bind. Default is 0.0f.
- */
-void DrawableEnvironment::bindDataUniform(
-    const float d0,
-    const float d1,
-    const float d2,
-    const float d3) const
-{
-    mDataUniforms.update(d0, d1, d2, d3);
-    mDataUniforms.bind();
 }
 
 /**
@@ -240,11 +222,13 @@ void DrawableEnvironment::setAndGenerateTextures(
     // cube side for irradiance and specular
     uint irrSpecCubeSide = ceilDiv(cubeSide, 4);
 
-    mSpecularMips = bimg::imageGetNumMips(
+    uint8_t specularMips = bimg::imageGetNumMips(
                         bimg::TextureFormat::RGBA32F,
                         irrSpecCubeSide,
                         irrSpecCubeSide) /
                     2; // ignore too low mips
+
+    mDataUniforms.updateSpecularMipsLevels(specularMips);
 
     if (!image.m_cubeMap) { // equirect
         mHdrTexture.set(
@@ -314,7 +298,7 @@ void DrawableEnvironment::setAndGenerateTextures(
         true // is cubemap
     );
 
-    generateTextures(image, cubeSide, cubeMips, viewId);
+    generateTextures(image, cubeSide, cubeMips, specularMips, viewId);
 }
 
 /**
@@ -328,6 +312,7 @@ void DrawableEnvironment::generateTextures(
     const bimg::ImageContainer& image,
     uint                        cubeSide,
     uint8_t                     cubeMips,
+    uint8_t                     specularMips,
     uint                        viewId)
 {
     using enum ComputeProgram;
@@ -398,7 +383,8 @@ void DrawableEnvironment::generateTextures(
     mIrradianceTexture.bindForCompute(
         1, 0, bgfx::Access::Write, bgfx::TextureFormat::RGBA32F);
 
-    bindDataUniform(float(cubeSide));
+    mDataUniforms.updateCubeSideResolution(cubeSide);
+    mDataUniforms.bind();
 
     // cube side for irradiance and specular
     uint irrSpecCubeSide = ceilDiv(cubeSide, 4);
@@ -412,10 +398,10 @@ void DrawableEnvironment::generateTextures(
 
     // create specular and sheen map from cubemap
 
-    for (uint8_t mip = 0; mip < mSpecularMips; ++mip) {
+    for (uint8_t mip = 0; mip < specularMips; ++mip) {
         const uint32_t mipSize = ceilDiv(irrSpecCubeSide, 1 << mip);
         const float    roughness =
-            static_cast<float>(mip) / static_cast<float>(mSpecularMips - 1);
+            static_cast<float>(mip) / static_cast<float>(specularMips - 1);
 
         // ensure at least 1 threadgroup is dispatched for small mips
         // assuming the compute shader uses 8x8 threads per group
@@ -427,8 +413,11 @@ void DrawableEnvironment::generateTextures(
 
         mSpecularTexture.bindForCompute(
             1, mip, bgfx::Access::Write, bgfx::TextureFormat::RGBA32F);
-
-        bindDataUniform(roughness, float(cubeSide), 1.0f); // GGX = 1
+        
+        mDataUniforms.updateRoughness(roughness);
+        mDataUniforms.updateCubeSideResolution(cubeSide);
+        mDataUniforms.updateDistributionModel(1u); // GGX = 1
+        mDataUniforms.bind();
 
         bgfx::dispatch(
             viewId,
@@ -451,7 +440,10 @@ void DrawableEnvironment::generateTextures(
             bgfx::TextureFormat::RGBA32F
         );
 
-        bindDataUniform(roughness, float(cubeSide), 2.0f); // Charlie = 2
+        mDataUniforms.updateRoughness(roughness);
+        mDataUniforms.updateCubeSideResolution(cubeSide);
+        mDataUniforms.updateDistributionModel(2u); // Charlie = 2
+        mDataUniforms.bind();
 
         bgfx::dispatch(
             viewId,

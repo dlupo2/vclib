@@ -24,35 +24,54 @@
 #define VCL_BGFX_DRAWABLE_UNIFORMS_DRAWABLE_ENVIRONMENT_UNIFORMS_H
 
 #include <vclib/bgfx/uniform.h>
+#include <vclib/render/settings/pbr_viewer_settings.h>
 
 namespace vcl {
 
 class DrawableEnvironmentUniforms
 {
-    mutable std::array<float, 4> mData = {
+    mutable std::array<float, 4> mData0 = {
         0.0, // exposure
-        0.0, // 16 bits tone mapping, 16 bits specular mip levels
+        0.0, // tone mapping
         0.0, // roughness
         0.0  // cube side
     };
 
-    // todo: change name of the uniform to something more meaningful
-    Uniform mDataUniform = Uniform("u_dataPack", bgfx::UniformType::Vec4);
+    mutable std::array<float, 4> mData1 = {
+        0.0, // specular mip levels
+        0.0, // distribution model
+        0.0,
+        0.0
+    };
+
+    Uniform mDataUniform0 =
+        Uniform("u_environmentSettingsPack0", bgfx::UniformType::Vec4);
+
+    Uniform mDataUniform1 =
+        Uniform("u_environmentSettingsPack1", bgfx::UniformType::Vec4);
 
 public:
     DrawableEnvironmentUniforms() = default;
 
-    void update(float a, float b, float c, float d) const
-    {
-        mData[0] = a;
-        mData[1] = b;
-        mData[2] = c;
-        mData[3] = d;
-    }
+    void updateExposure(float exposure) const { mData0[0] = exposure; }
 
-    void bind() const
+    void updateToneMapping(PBRViewerSettings::ToneMapping tm) const
+    { mData0[1] = float(tm);}
+
+    void updateRoughness(float roughness) { mData0[2] = roughness; }
+
+    void updateCubeSideResolution(float cubeSide) { mData0[3] = cubeSide; }
+
+    void updateSpecularMipsLevels(uint8_t specMips)
+    {mData1[0] = float(specMips);}
+
+    void updateDistributionModel(uint8_t model)
+    {mData1[1] = float(model);}
+
+    void bind() const 
     {
-        mDataUniform.bind(mData.data());
+        mDataUniform0.bind(mData0.data()); 
+        mDataUniform1.bind(mData1.data()); 
     }
 };
 

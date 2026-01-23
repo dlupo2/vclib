@@ -53,7 +53,7 @@ int main(int argc, char** argv)
         "/gltf/CompareSheen/CompareSheen.gltf"
     };
 
-    uint selectedExample = DAMAGED_HELMET;
+    uint selectedExample = COMPARE_SHEEN;
 
     enum PanoramasExamples {
         COLOSSEUM_HDR,

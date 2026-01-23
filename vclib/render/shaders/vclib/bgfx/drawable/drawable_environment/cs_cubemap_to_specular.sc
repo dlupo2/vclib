@@ -25,11 +25,6 @@
 SAMPLERCUBE(s_env0, 0);
 IMAGE2D_ARRAY_WO(i_specular, rgba32f, 1);
 
-uniform vec4 u_dataPack;
-#define roughness u_dataPack.x
-#define sourceResolution u_dataPack.y
-#define distributionModel uint(u_dataPack.z)
-
 NUM_THREADS(8, 8, 1)
 void main()
 {
@@ -66,22 +61,22 @@ void main()
         vec4 sample = getImportanceSample(
             i,                              // current sample index
             SAMPLE_COUNT, 
-            N, 
-            distributionModel,
-            roughness
+            N,
+            u_distributionModel,
+            u_roughness
         );
 
         vec3 H = sample.xyz;
         float pdf = sample.w;
 
-        float mipLevel = computeLod(pdf, sourceResolution, float(SAMPLE_COUNT));
+        float mipLevel = computeLod(pdf, u_cubeSideResolution, float(SAMPLE_COUNT));
 
         vec3 L = normalize(reflect(-V, H));
         float NoL = dot(N, L);
 
         if(NoL > 0.0)
         {
-            if(roughness == 0.0) 
+            if(u_roughness == 0.0)
                 mipLevel = 0.0;
 
             vec3 sampleColor = textureCubeLod(s_env0, leftHand(L), mipLevel).rgb;

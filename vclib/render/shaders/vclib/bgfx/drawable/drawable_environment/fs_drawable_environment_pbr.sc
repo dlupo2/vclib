@@ -20,23 +20,20 @@
  * (https://www.mozilla.org/en-US/MPL/2.0/) for more details.                *
  ****************************************************************************/
 
-#ifndef VCL_BGFX_PROGRAMS_EMBEDDED_VF_PROGRAMS_DRAWABLE_BACKGROUND_PBR_H
-#define VCL_BGFX_PROGRAMS_EMBEDDED_VF_PROGRAMS_DRAWABLE_BACKGROUND_PBR_H
+$input v_texcoord0
 
-#include <vclib/bgfx/programs/vert_frag_loader.h>
+#include <vclib/bgfx/drawable/uniforms/drawable_environment_uniforms.sh>
 
-namespace vcl {
+#include <vclib/bgfx/drawable/mesh/mesh_render_buffers_macros.h>
 
-template<>
-struct VertFragLoader<VertFragProgram::DRAWABLE_BACKGROUND_PBR>
+// textures
+SAMPLERCUBE(s_env0, VCL_MRB_CUBEMAP0);
+
+void main()
 {
-    static bgfx::EmbeddedShader::Data vertexShader(
-        bgfx::RendererType::Enum type);
-
-    static bgfx::EmbeddedShader::Data fragmentShader(
-        bgfx::RendererType::Enum type);
-};
-
-} // namespace vcl
-
-#endif // VCL_BGFX_PROGRAMS_EMBEDDED_VF_PROGRAMS_DRAWABLE_BACKGROUND_PBR_H
+    vec3 color = textureCube(s_env0, normalize(v_texcoord0)).rgb;
+    color *= u_exposure;
+    color = toneMap(color, u_toneMapping);
+    color = gammaCorrect(color);
+    gl_FragColor = vec4(color.r, color.g, color.b, 1.0);
+}

@@ -56,8 +56,6 @@ uniform vec4 u_uvRotationPack1;
 
 #define u_pbr_settings floatBitsToUint(u_settings.x)
 #define u_pbr_texture_settings floatBitsToUint(u_settings.y)
-#define u_tone_mapping floatBitsToUint(u_settings.z)
-#define u_exposure u_settings.w
 
 #define u_baseColorUvTransform         getUvTransform(u_baseColorTexUvScaleTrans.xy, u_baseColorTexUvScaleTrans.zw, u_uvRotationPack0.x)
 #define u_metallicRoughnessUvTransform getUvTransform(u_metallicRoughnessTexUvScaleTrans.xy, u_metallicRoughnessTexUvScaleTrans.zw, u_uvRotationPack0.y)

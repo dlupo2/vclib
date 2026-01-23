@@ -26,4 +26,14 @@
 #include <vclib/bgfx/shaders_common.sh>
 #include <vclib/bgfx/pbr_common.sh>
 
+uniform vec4 u_environmentSettingsPack0;
+uniform vec4 u_environmentSettingsPack1;
+
+#define u_exposure u_environmentSettingsPack0.x
+#define u_toneMapping uint(u_environmentSettingsPack0.y)
+#define u_roughness u_environmentSettingsPack0.z
+#define u_cubeSideResolution u_environmentSettingsPack0.w
+#define u_specularMipLevels uint(u_environmentSettingsPack1.x)
+#define u_distributionModel uint(u_environmentSettingsPack1.y)
+
 #endif // VCL_EXT_BGFX_UNIFORMS_DRAWABLE_BACKGROUND_UNIFORMS_SH

@@ -25,6 +25,8 @@ $input v_position, v_normal, v_tangent, v_color, v_texcoord0, v_texcoord1
 #include <vclib/bgfx/drawable/drawable_mesh/uniforms.sh>
 #include <vclib/bgfx/pbr_common.sh>
 
+#include <vclib/bgfx/drawable/uniforms/drawable_environment_uniforms.sh>
+
 #include <vclib/bgfx/drawable/mesh/mesh_render_buffers_macros.h>
 
 #define primitiveID (u_firstChunkPrimitiveID + gl_PrimitiveID)
@@ -45,9 +47,6 @@ SAMPLER2D(sheenRoughnessTex, VCL_MRB_TEXTURE7);
 SAMPLERCUBE(s_irradiance, VCL_MRB_CUBEMAP0);
 SAMPLERCUBE(s_specular, VCL_MRB_CUBEMAP1);
 SAMPLERCUBE(s_sheen, VCL_MRB_CUBEMAP2);
-
-uniform vec4 u_dataPack;
-#define specularMipCount u_dataPack.x
 
 void main()
 {
@@ -200,7 +199,7 @@ void main()
         vec3 diffuseLight = textureCube(s_irradiance, leftHand(normal)).rgb;
 
         // specular light
-        float specularMipLevel = roughness * (specularMipCount - 1.0);
+        float specularMipLevel = roughness * (u_specularMipLevels - 1.0);
         
         vec3 specularLight = textureCubeLod(s_specular, leftHand(reflection), specularMipLevel).rgb;
 
@@ -235,7 +234,7 @@ void main()
             sheenLight,
             albedoSheenScaling,
             u_exposure,
-            u_tone_mapping
+            u_toneMapping
         );
     }
     else
@@ -267,7 +266,7 @@ void main()
             roughness,
             emissiveColor,
             u_exposure,
-            u_tone_mapping
+            u_toneMapping
         );
     }
 }
