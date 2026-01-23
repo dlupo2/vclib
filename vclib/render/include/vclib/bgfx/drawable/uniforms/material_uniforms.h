@@ -74,7 +74,8 @@ class MaterialUniforms
             std::array<float, 4>{1.0, 1.0, 0.0, 0.0}, // occlusion
             std::array<float, 4>{1.0, 1.0, 0.0, 0.0}, // emissive
             std::array<float, 4>{1.0, 1.0, 0.0, 0.0}, // sheen color
-            std::array<float, 4>{1.0, 1.0, 0.0, 0.0}  // sheen roughness
+            std::array<float, 4>{1.0, 1.0, 0.0, 0.0}, // sheen roughness
+            std::array<float, 4>{1.0, 1.0, 0.0, 0.0}  // sheen lut
         };
 
     constexpr static uint N_UV_ROTATION_PACKS =
@@ -83,7 +84,7 @@ class MaterialUniforms
     std::array<std::array<float, 4>, N_UV_ROTATION_PACKS> 
         mTextureUvRotations = {
             std::array<float, 4>{0.0, 0.0, 0.0, 0.0}, // rotations for textures 0-3
-            std::array<float, 4>{0.0, 0.0, 0.0, 0.0}  // rotations for texture 4-6
+            std::array<float, 4>{0.0, 0.0, 0.0, 0.0}  // rotations for texture 4-7
         };
 
     Uniform mBaseColorUniform =
@@ -110,7 +111,8 @@ class MaterialUniforms
         Uniform("u_occlusionTexUvScaleTrans", bgfx::UniformType::Vec4),
         Uniform("u_emissiveTexUvScaleTrans", bgfx::UniformType::Vec4),
         Uniform("u_sheenColorTexUvScaleTrans", bgfx::UniformType::Vec4),
-        Uniform("u_sheenRoughnessTexUvScaleTrans", bgfx::UniformType::Vec4)
+        Uniform("u_sheenRoughnessTexUvScaleTrans", bgfx::UniformType::Vec4),
+        Uniform("u_sheenELuTexUvScaleTrans", bgfx::UniformType::Vec4)
     };
 
     Uniform mUvRotationPack0Uniform =

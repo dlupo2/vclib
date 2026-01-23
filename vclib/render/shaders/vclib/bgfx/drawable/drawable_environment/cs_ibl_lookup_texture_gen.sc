@@ -62,7 +62,7 @@ void main()
     const uint SAMPLE_COUNT = 1024u;
     for(uint i = 0; i < SAMPLE_COUNT; ++i)
     {
-        vec4 sample = getImportanceSample(
+        vec4 sampleGGX = getImportanceSample(
             i,
             SAMPLE_COUNT,
             N,
@@ -70,36 +70,55 @@ void main()
             roughness
         );
 
-        vec3 H = sample.xyz;
-        vec3 L = normalize(reflect(-V, H));
+        vec4 sampleCharlie = getImportanceSample(
+            i,
+            SAMPLE_COUNT,
+            N,
+            DISTRIBUTION_CHARLIE,
+            roughness
+        );
 
-        float NoL = saturate(L.z);
-        float NoH = saturate(H.z);
-        float VoH = saturate(dot(V, H));
+        vec3 H_GGX = sampleGGX.xyz;
+        vec3 H_Charlie = sampleCharlie.xyz;
 
-        if(NoL > 0.0)
+        vec3 L_GGX = normalize(reflect(-V, H_GGX));
+        vec3 L_Charlie = normalize(reflect(-V, H_Charlie));
+
+        float NoL_GGX = saturate(L_GGX.z);
+        float NoL_Charlie = saturate(L_Charlie.z);
+
+        float NoH_GGX = saturate(H_GGX.z);
+        float NoH_Charlie = saturate(H_Charlie.z);
+
+        float VoH_GGX = saturate(dot(V, H_GGX));
+        float VoH_Charlie = saturate(dot(V, H_Charlie));
+
+        if(NoL_GGX > 0.0)
         {
             // LUT for GGX distribution.
 
             // Taken from: https://bruop.github.io/ibl
             // Shadertoy: https://www.shadertoy.com/view/3lXXDB
             // Terms besides V are from the GGX PDF we're dividing by.
-            float V_pdf = V_GGX(NoV, NoL, alpha2) * VoH * NoL / NoH;
-            float Fc = pow(1.0 - VoH, 5.0);
+            float V_pdf = V_GGX(NoV, NoL_GGX, alpha2) * VoH_GGX * NoL_GGX / NoH_GGX;
+            float Fc = pow(1.0 - VoH_GGX, 5.0);
             I1 += (1.0 - Fc) * V_pdf;
             I2 += Fc * V_pdf;
+        }
 
+        if(NoL_Charlie > 0.0)
+        {
             // LUT for Charlie distribution.
-            float sheenDistribution = D_Charlie(roughness, NoH);
-            float sheenVisibility = V_Ashikhmin(NoL, NoV);
-            I3 += sheenVisibility * sheenDistribution * NoL * VoH;
+            float sheenDistribution = D_Charlie(roughness, NoH_Charlie);
+            float sheenVisibility = V_Ashikhmin(NoL_Charlie, NoV);
+            I3 += sheenVisibility * sheenDistribution * NoL_Charlie * VoH_Charlie;
         }
     }
 
     // The PDF is simply pdf(v, h) -> NDF * <nh>.
     // To parametrize the PDF over l, use the Jacobian transform, yielding to: pdf(v, l) -> NDF * <nh> / 4<vh>
     // Since the BRDF divide through the PDF to be normalized, the 4 can be pulled out of the integral.
-    vec3 brdf = vec3(I1, I2, I3) * vec3_splat(4.0);
+    vec3 brdf = vec3(I1, I2, I3 * 2.0 * PI) * vec3_splat(4.0);
     brdf /= vec3_splat(SAMPLE_COUNT);
 
     imageStore(i_lut, pixel, vec4(brdf, 1.0));

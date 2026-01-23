@@ -37,6 +37,7 @@ uniform vec4 u_occlusionTexUvScaleTrans;
 uniform vec4 u_emissiveTexUvScaleTrans;
 uniform vec4 u_sheenColorTexUvScaleTrans;
 uniform vec4 u_sheenRoughnessTexUvScaleTrans;
+uniform vec4 u_sheenELuTexUvScaleTrans;
 
 uniform vec4 u_uvRotationPack0;
 uniform vec4 u_uvRotationPack1;
@@ -64,4 +65,5 @@ uniform vec4 u_uvRotationPack1;
 #define u_emissiveUvTransform          getUvTransform(u_emissiveTexUvScaleTrans.xy, u_emissiveTexUvScaleTrans.zw, u_uvRotationPack1.x)
 #define u_sheenColorUvTransform        getUvTransform(u_sheenColorTexUvScaleTrans.xy, u_sheenColorTexUvScaleTrans.zw, u_uvRotationPack1.y)
 #define u_sheenRoughnessUvTransform    getUvTransform(u_sheenRoughnessTexUvScaleTrans.xy, u_sheenRoughnessTexUvScaleTrans.zw, u_uvRotationPack1.z)
+#define u_sheenELutUvTransform         getUvTransform(u_sheenELuTexUvScaleTrans.xy, u_sheenELuTexUvScaleTrans.zw, u_uvRotationPack1.w)
 #endif // VCL_EXT_BGFX_UNIFORMS_MATERIAL_UNIFORMS_SH

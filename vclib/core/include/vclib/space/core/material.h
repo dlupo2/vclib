@@ -71,6 +71,7 @@ public:
         SHEEN_COLOR,     ///< The sheen color texture. Stored in sRGB color space.
         SHEEN_ROUGHNESS, ///< The sheen roughness texture. Stored in linear
                        ///< color space.
+        SHEEN_E_LUT,
         COUNT      ///< Utility value to get the number of texture types.
     };
 
@@ -83,7 +84,9 @@ public:
                 "occlusionTex",
                 "emissiveTex",
                 "sheenColorTex",
-                "sheenRoughnessTex"};
+                "sheenRoughnessTex",
+                "sheenELuTex"
+            };
 
 private:
     inline static const uint N_TEXTURE_TYPE =
@@ -439,6 +442,7 @@ public:
         case TextureType::NORMAL:
         case TextureType::OCCLUSION:
         case TextureType::SHEEN_ROUGHNESS:
+        case TextureType::SHEEN_E_LUT:
         default: return Image::ColorSpace::LINEAR;
         }
     }

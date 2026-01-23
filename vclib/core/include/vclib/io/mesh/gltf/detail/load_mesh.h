@@ -190,6 +190,16 @@ int loadGltfPrimitiveMaterial(
                                          const tinygltf::ExtensionMap&
                                              textureExtensions,
                                          Material::TextureType type) {
+
+            if(type == Material::TextureType::SHEEN_E_LUT) {
+                vcl::TextureDescriptor& texture = mat.textureDescriptor(type);
+                texture.path() = VCLIB_ASSETS_PATH "lut_sheen_E.png";
+                Image timg = loadImage(texture.path());
+                timg.colorSpace() = Material::textureTypeToColorSpace(type);
+                m.pushTextureImage(texture.path(), std::move(timg));
+                return;
+            }
+
             if (textureId != -1) {
                 const tinygltf::Image& img =
                     model.images[model.textures[textureId].source];
@@ -306,6 +316,8 @@ int loadGltfPrimitiveMaterial(
                 mat, sheenColorTextureId, sheenColorTextureExtensions, Material::TextureType::SHEEN_COLOR);
             loadTextureInMaterial(
                 mat, sheenRoughnessTextureId, sheenRoughnessTextureExtensions, Material::TextureType::SHEEN_ROUGHNESS);
+            loadTextureInMaterial(
+                mat, -1, tinygltf::ExtensionMap(), Material::TextureType::SHEEN_E_LUT);
             m.pushMaterial(mat);
             idx = m.materialsNumber() - 1; // index of the added material
             if constexpr (HasColor<MeshType>) {

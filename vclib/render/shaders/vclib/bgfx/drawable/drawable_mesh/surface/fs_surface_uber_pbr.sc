@@ -43,6 +43,7 @@ SAMPLER2D(emissiveTex, VCL_MRB_TEXTURE4);
 SAMPLER2D(s_brdf_lut, VCL_MRB_TEXTURE5);
 SAMPLER2D(sheenColorTex, VCL_MRB_TEXTURE6);
 SAMPLER2D(sheenRoughnessTex, VCL_MRB_TEXTURE7);
+SAMPLER2D(sheenELuTex, 6); //FIXME
 
 SAMPLERCUBE(s_irradiance, VCL_MRB_CUBEMAP0);
 SAMPLERCUBE(s_specular, VCL_MRB_CUBEMAP1);
@@ -207,7 +208,7 @@ void main()
         vec3 sheenSample = textureCubeLod(s_sheen, leftHand(reflection), specularMipLevel).rgb;
         vec3 sheenLight = sheenSample * sheenColor * brdf.b;
         // TODO: see if the LUT is needed
-        float albedoSheenScaling = 1.0 - max(sheenColor.r, max(sheenColor.g, sheenColor.b)) * (1.0 - 0.5 * sheenRoughness);
+        float albedoSheenScaling = 1.0 - max(sheenColor.r, max(sheenColor.g, sheenColor.b)) * texture2D(sheenELuTex, vec2(NoV, sheenRoughness)).r;
 
         // Fresnel
         vec3 metalFresnel = iblGgxFresnel(brdf.rg, NoV, roughness, baseColor.rgb);
