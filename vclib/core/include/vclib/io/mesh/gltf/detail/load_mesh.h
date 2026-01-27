@@ -34,6 +34,8 @@
 
 #include <regex>
 
+#include "lut_sheen_E.h"
+
 namespace vcl::detail {
 
 enum class GltfAttrType {
@@ -193,8 +195,13 @@ int loadGltfPrimitiveMaterial(
 
             if(type == Material::TextureType::SHEEN_E_LUT) {
                 vcl::TextureDescriptor& texture = mat.textureDescriptor(type);
-                texture.path() = VCLIB_ASSETS_PATH "lut_sheen_E.png";
-                Image timg = loadImage(texture.path());
+                Image timg(
+                    lut_sheen_E_rgba,
+                    lut_sheen_E_size_px,
+                    lut_sheen_E_size_px,
+                    false,
+                    Color::Format::RGBA
+                );
                 timg.colorSpace() = Material::textureTypeToColorSpace(type);
                 m.pushTextureImage(texture.path(), std::move(timg));
                 return;
