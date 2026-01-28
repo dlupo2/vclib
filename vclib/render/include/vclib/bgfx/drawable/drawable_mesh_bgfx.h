@@ -234,7 +234,7 @@ public:
                 if (settings.pbrSettings.pbrMode) {
                     if (env !=  nullptr && env->canDraw()) {
                         using enum DrawableEnvironment::TextureType;
-                        env->bindTexture(BRDF_LUT, VCL_MRB_TEXTURE5);
+                        env->bindTexture(BRDF_LUT, VCL_MRB_TEXTURE8);
                         env->bindTexture(IRRADIANCE, VCL_MRB_CUBEMAP0);
                         env->bindTexture(SPECULAR, VCL_MRB_CUBEMAP1);
                         env->bindTexture(SHEEN, VCL_MRB_CUBEMAP2);

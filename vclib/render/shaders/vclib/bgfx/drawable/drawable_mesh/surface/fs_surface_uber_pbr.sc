@@ -40,10 +40,12 @@ SAMPLER2D(metallicRoughnessTex, VCL_MRB_TEXTURE1);
 SAMPLER2D(normalTex, VCL_MRB_TEXTURE2);
 SAMPLER2D(occlusionTex, VCL_MRB_TEXTURE3);
 SAMPLER2D(emissiveTex, VCL_MRB_TEXTURE4);
-SAMPLER2D(s_brdf_lut, VCL_MRB_TEXTURE5);
-SAMPLER2D(sheenColorTex, VCL_MRB_TEXTURE6);
-SAMPLER2D(sheenRoughnessTex, VCL_MRB_TEXTURE7);
-SAMPLER2D(sheenELuTex, 6); //FIXME
+SAMPLER2D(sheenColorTex, VCL_MRB_TEXTURE5);
+SAMPLER2D(sheenRoughnessTex, VCL_MRB_TEXTURE6);
+SAMPLER2D(sheenELuTex, VCL_MRB_TEXTURE7); //FIXME
+
+// keep this texture last
+SAMPLER2D(s_brdf_lut, VCL_MRB_TEXTURE8);
 
 SAMPLERCUBE(s_irradiance, VCL_MRB_CUBEMAP0);
 SAMPLERCUBE(s_specular, VCL_MRB_CUBEMAP1);
@@ -89,6 +91,7 @@ void main()
 
     // multiply vertex color with material base color
     vec4 baseColor = u_baseColorFactor * textureBaseColor * vertexBaseColor;
+    //baseColor = vec4(texture2D(sheenELuTex, mul(u_invView, vec4(v_position,1.0)).xy));
 
     // alpha mode MASK
     if (isAlphaModeMask(u_pbr_settings))
@@ -194,25 +197,25 @@ void main()
         vec3 f0_dielectric = vec3_splat(0.04);
         vec3 f90 = vec3_splat(1.0);
 
-        vec3 brdf = texture2D(s_brdf_lut, vec2(NoV, roughness)).rgb;
+        vec2 brdf = texture2D(s_brdf_lut, vec2(NoV, roughness)).rg;
+        float sheenBrdf = texture2D(s_brdf_lut, vec2(NoV, sheenRoughness)).b;
 
         // diffuse light
         vec3 diffuseLight = textureCube(s_irradiance, leftHand(normal)).rgb;
 
         // specular light
         float specularMipLevel = roughness * (u_specularMipLevels - 1.0);
-        
         vec3 specularLight = textureCubeLod(s_specular, leftHand(reflection), specularMipLevel).rgb;
 
         // sheen light
-        vec3 sheenSample = textureCubeLod(s_sheen, leftHand(reflection), specularMipLevel).rgb;
-        vec3 sheenLight = sheenSample * sheenColor * brdf.b;
-        // TODO: see if the LUT is needed
+        float sheenMipLevel = sheenRoughness * (u_specularMipLevels - 1.0);
+        vec3 sheenSample = textureCubeLod(s_sheen, leftHand(reflection), sheenMipLevel).rgb;
+        vec3 sheenLight = sheenSample * sheenColor * sheenBrdf;
         float albedoSheenScaling = 1.0 - max(sheenColor.r, max(sheenColor.g, sheenColor.b)) * texture2D(sheenELuTex, vec2(NoV, sheenRoughness)).r;
 
         // Fresnel
-        vec3 metalFresnel = iblGgxFresnel(brdf.rg, NoV, roughness, baseColor.rgb);
-        vec3 dielectricFresnel = iblGgxFresnel(brdf.rg, NoV, roughness, f0_dielectric);
+        vec3 metalFresnel = iblGgxFresnel(brdf, NoV, roughness, baseColor.rgb);
+        vec3 dielectricFresnel = iblGgxFresnel(brdf, NoV, roughness, f0_dielectric);
 
         // occlusion
         float occlusion = 1.0;
