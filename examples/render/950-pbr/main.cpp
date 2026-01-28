@@ -40,6 +40,7 @@ int main(int argc, char** argv)
         TEXTURE_TRANSFORM_TEST,
         COMPARE_SHEEN,
         SHEEN_TEST_GRID,
+        SHEEN_CLOTH,
         COUNT_EXAMPLES
     };
 
@@ -52,10 +53,11 @@ int main(int argc, char** argv)
         "/gltf/CompareEmissiveStrength/CompareEmissiveStrength.gltf",
         "/gltf/TextureTransformTest/TextureTransformTest.gltf",
         "/gltf/CompareSheen/CompareSheen.gltf",
-        "/gltf/SheenTestGrid/SheenTestGrid.gltf"
+        "/gltf/SheenTestGrid/SheenTestGrid.gltf",
+        "/gltf/SheenCloth/SheenCloth.gltf"
     };
 
-    uint selectedExample = SHEEN_TEST_GRID;
+    uint selectedExample = SHEEN_CLOTH;
 
     enum PanoramasExamples {
         COLOSSEUM_HDR,
