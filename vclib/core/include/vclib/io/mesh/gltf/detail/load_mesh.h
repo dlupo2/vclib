@@ -83,7 +83,6 @@ int loadGltfPrimitiveMaterial(
         int sheenColorTextureId = -1, sheenRoughnessTextureId = -1;
 
 
-
         std::string matName = mat.name;
 
         // baseColorFactor
@@ -170,8 +169,12 @@ int loadGltfPrimitiveMaterial(
                 if(sheenColorTextureVal.Has("index"))
                 {
                     sheenColorTextureId = sheenColorTextureVal.Get("index").GetNumberAsInt();
-                    sheenColorTextureExtensions["extensions"] =
-                        sheenColorTextureVal.Get("extensions");
+                    const tinygltf::Value& extensions = sheenColorTextureVal.Get("extensions");
+                    for(std::string extension : extensions.Keys())
+                    {
+                        std::pair<std::string, const tinygltf::Value&> e(extension, extensions.Get(extension));
+                        sheenColorTextureExtensions.insert(e);
+                    }
                 }
             }
             if(ext.Has("sheenRoughnessTexture")) {
@@ -180,8 +183,12 @@ int loadGltfPrimitiveMaterial(
                 {
                     sheenRoughnessTextureId = 
                         sheenRoughnessTextureVal.Get("index").GetNumberAsInt();
-                    sheenRoughnessTextureExtensions["extensions"] =
-                        sheenRoughnessTextureVal.Get("extensions");
+                    const tinygltf::Value& extensions = sheenRoughnessTextureVal.Get("extensions");
+                    for(std::string extension : extensions.Keys())
+                    {
+                        std::pair<std::string, const tinygltf::Value&> e(extension, extensions.Get(extension));
+                        sheenRoughnessTextureExtensions.insert(e);
+                    }
                 }
             }
         }
@@ -195,6 +202,7 @@ int loadGltfPrimitiveMaterial(
 
             if(type == Material::TextureType::SHEEN_E_LUT) {
                 vcl::TextureDescriptor& texture = mat.textureDescriptor(type);
+                texture.path() = "sheenELut"; // fake path to make the texture visible
                 Image timg(
                     lut_sheen_E_rgba,
                     lut_sheen_E_size_px,
