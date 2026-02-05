@@ -36,6 +36,9 @@ int main(int argc, char** argv)
         NORMAL_TENGENT_MIRROR_TEST,
         COMPARE_AMBIENT_OCCLUSION,
         DAMAGED_HELMET,
+        BAGUETTE,
+        AR_SCOPE,
+        FEDORA,
         COUNT_EXAMPLES
     };
 
@@ -44,9 +47,12 @@ int main(int argc, char** argv)
         "/gltf/MetalRoughSpheres/MetalRoughSpheres.gltf",
         "/gltf/NormalTangentMirrorTest/NormalTangentMirrorTest.gltf",
         "/gltf/CompareAmbientOcclusion/CompareAmbientOcclusion.gltf",
-        "/gltf/DamagedHelmet/DamagedHelmet.gltf"};
+        "/gltf/DamagedHelmet/DamagedHelmet.gltf",
+        "/gltf/Baguette/Baguette.gltf",
+        "/gltf/ARScope/ARScope.gltf",
+        "/gltf/Fedora/Fedora.gltf"};
 
-    uint selectedExample = METAL_ROUGH_SPHERES;
+    uint selectedExample = DAMAGED_HELMET;
 
     enum PanoramasExamples {
         COLOSSEUM_HDR,
@@ -66,7 +72,7 @@ int main(int argc, char** argv)
         "/panoramas/uffizi.hdr",
         "/panoramas/uffizi.ktx"};
 
-    uint selectedPanorama = UFFIZI_KTX;
+    uint selectedPanorama = COLOSSEUM_HDR;
 
     std::vector<vcl::TriMesh> meshes = vcl::loadMeshes<vcl::TriMesh>(
         VCLIB_EXAMPLE_MESHES_PATH + gltfExampleFilenames[selectedExample]);
