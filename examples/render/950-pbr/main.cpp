@@ -39,6 +39,8 @@ int main(int argc, char** argv)
         BAGUETTE,
         AR_SCOPE,
         FEDORA,
+        PAN,
+        CRYPTO_G,
         COUNT_EXAMPLES
     };
 
@@ -50,9 +52,11 @@ int main(int argc, char** argv)
         "/gltf/DamagedHelmet/DamagedHelmet.gltf",
         "/gltf/Baguette/Baguette.gltf",
         "/gltf/ARScope/ARScope.gltf",
-        "/gltf/Fedora/Fedora.gltf"};
+        "/gltf/Fedora/Fedora.gltf",
+        "/gltf/Pan/Pan.gltf",
+        "/gltf/CryptoG/CryptoG.gltf"};
 
-    uint selectedExample = DAMAGED_HELMET;
+    uint selectedExample = CRYPTO_G;
 
     enum PanoramasExamples {
         COLOSSEUM_HDR,

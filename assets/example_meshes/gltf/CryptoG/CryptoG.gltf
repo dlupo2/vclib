@@ -1,0 +1,351 @@
+{
+  "accessors": [
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 16518,
+      "max": [
+        6.658151626586914,
+        6.658148288726807,
+        0.7672787308692932
+      ],
+      "min": [
+        -6.658151626586914,
+        -6.658151149749756,
+        -0.7672787308692932
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 198216,
+      "componentType": 5126,
+      "count": 16518,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5126,
+      "count": 16518,
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 16518,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5125,
+      "count": 92976,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 396432,
+      "componentType": 5126,
+      "count": 64449,
+      "max": [
+        7.48029088973999,
+        7.480287551879883,
+        1.3646544218063354
+      ],
+      "min": [
+        -7.480288505554199,
+        -7.480289936065674,
+        -1.3646544218063354
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 1169820,
+      "componentType": 5126,
+      "count": 64449,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 3,
+      "byteOffset": 264288,
+      "componentType": 5126,
+      "count": 64449,
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 132144,
+      "componentType": 5126,
+      "count": 64449,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 371904,
+      "componentType": 5125,
+      "count": 342096,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "generator": "fab-model-conversion",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 1740288,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 647736,
+      "byteOffset": 1740288,
+      "byteStride": 8,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1943208,
+      "byteOffset": 2388024,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 1295472,
+      "byteOffset": 4331232,
+      "byteStride": 16,
+      "target": 34962
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 5626704,
+      "uri": "scene.bin"
+    }
+  ],
+  "extensionsUsed": [
+    "KHR_materials_clearcoat",
+    "KHR_materials_specular"
+  ],
+  "images": [
+    {
+      "uri": "textures/enamel_M_metallicRoughness.png"
+    },
+    {
+      "uri": "textures/gold_M_metallicRoughness.jpeg"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "emissiveFactor": [
+        0.03709710925778361,
+        0.0,
+        0.0
+      ],
+      "extensions": {
+        "KHR_materials_clearcoat": {
+          "clearcoatFactor": 1.0,
+          "clearcoatRoughnessFactor": 0.0
+        },
+        "KHR_materials_specular": {
+          "specularColorFactor": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "specularFactor": 1.0
+        }
+      },
+      "name": "enamel_M",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.8741016688625401,
+          0.49057356214226405,
+          0.20302991917017676,
+          1.0
+        ],
+        "metallicRoughnessTexture": {
+          "index": 0
+        }
+      }
+    },
+    {
+      "doubleSided": true,
+      "emissiveFactor": [
+        0.0,
+        0.011985359374582262,
+        0.0314744365057738
+      ],
+      "extensions": {
+        "KHR_materials_specular": {
+          "specularColorFactor": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "specularFactor": 1.0
+        }
+      },
+      "name": "gold_M",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          1.0,
+          0.4851499400999994,
+          0.19461783039999953,
+          1.0
+        ],
+        "metallicRoughnessTexture": {
+          "index": 1
+        },
+        "roughnessFactor": 0.4881239017687224
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "enamel_enamel_M_0",
+      "primitives": [
+        {
+          "attributes": {
+            "COLOR_0": 2,
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TEXCOORD_0": 3
+          },
+          "indices": 4,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "gold_gold_M_0",
+      "primitives": [
+        {
+          "attributes": {
+            "COLOR_0": 7,
+            "NORMAL": 6,
+            "POSITION": 5,
+            "TEXCOORD_0": 8
+          },
+          "indices": 9,
+          "material": 1,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.220446049250313e-16,
+        -1.0,
+        0.0,
+        0.0,
+        1.0,
+        2.220446049250313e-16,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Sketchfab_model"
+    },
+    {
+      "children": [
+        2
+      ],
+      "matrix": [
+        0.009999999776482582,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.009999999776482582,
+        0.0,
+        0.0,
+        -0.009999999776482582,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "3c8792d62777401384871f84b9daca25.fbx"
+    },
+    {
+      "children": [
+        3
+      ],
+      "name": "RootNode"
+    },
+    {
+      "children": [
+        4,
+        6
+      ],
+      "name": "coin"
+    },
+    {
+      "children": [
+        5
+      ],
+      "name": "enamel"
+    },
+    {
+      "mesh": 0,
+      "name": "enamel_enamel_M_0"
+    },
+    {
+      "children": [
+        7
+      ],
+      "name": "gold"
+    },
+    {
+      "mesh": 1,
+      "name": "gold_gold_M_0"
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Sketchfab_Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0
+    },
+    {
+      "sampler": 0,
+      "source": 1
+    }
+  ]
+}
