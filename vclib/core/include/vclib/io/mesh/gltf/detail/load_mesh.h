@@ -63,12 +63,16 @@ int loadGltfPrimitiveMaterial(
         int    baseColorTextureId, metallicRoughnessTextureId, normalTextureId,
             occlusionTextureId, emissiveTextureId;
 
+        // extensions data
+
         double clearcoat = 0.0;
         double clearcoatRoughness = 0.0;
         double clearcoatNormalScale = 1.0;
         int clearcoatTextureId = -1;
         int clearcoatRoughnessTextureId = -1;
         int clearcoatNormalTextureId = -1;
+        
+        double emissiveStrength = 1.0f;
 
         const tinygltf::Material& mat = model.materials[p.material];
 
@@ -130,6 +134,8 @@ int loadGltfPrimitiveMaterial(
         // occlusionStrength
         occlusionStrength = mat.occlusionTexture.strength;
 
+		// extensions
+
         // clearcoat
         if(mat.extensions.contains("KHR_materials_clearcoat")) {
             const auto& clearcoatExt = mat.extensions.at("KHR_materials_clearcoat");
@@ -169,6 +175,16 @@ int loadGltfPrimitiveMaterial(
                         .Get("scale")
                         .GetNumberAsDouble();
             }
+		}
+		
+        // emissive strength
+        if(mat.extensions.contains("KHR_materials_emissive_strength")) {
+            const auto& emissiveStrengthExt =
+                mat.extensions.at("KHR_materials_emissive_strength");
+            if(emissiveStrengthExt.Has("emissiveStrength"))
+                emissiveStrength = emissiveStrengthExt
+                    .Get("emissiveStrength")
+                    .GetNumberAsDouble();
         }
 
         // function to load a texture in a material
@@ -247,6 +263,7 @@ int loadGltfPrimitiveMaterial(
             mat.clearcoat()            = clearcoat;
             mat.clearcoatRoughness()   = clearcoatRoughness;
             mat.clearcoatNormalScale() = clearcoatNormalScale;
+            mat.emissiveStrength()     = emissiveStrength;
             loadTextureInMaterial(
                 mat, baseColorTextureId, Material::TextureType::BASE_COLOR);
             loadTextureInMaterial(

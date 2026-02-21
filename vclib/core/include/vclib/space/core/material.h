@@ -113,11 +113,15 @@ private:
 
     bool mDoubleSided = false;
 
+    // extension PBR properties
+
     float mClearcoat = 0.0f;
 
     float mClearcoatRoughness = 0.0f;
 
     float mClearcoatNormalScale = 1.0f;
+    
+    float mEmissiveStrength = 1.0f;
 
 public:
     /**
@@ -301,6 +305,19 @@ public:
     float& clearcoatNormalScale() { return mClearcoatNormalScale; }
 
     /**
+     * @brief Gets the emissive strength multiplier.
+     * This scales the emissive color of the material.
+     * @return The emissive strength factor.
+     */
+    float emissiveStrength() const { return mEmissiveStrength; }
+
+    /**
+     * @brief Gets a mutable reference to the emissive strength.
+     * @return A reference to the emissive strength.
+     */
+    float& emissiveStrength() { return mEmissiveStrength; }
+
+    /**
      * @brief Gets the texture descriptor for the base color texture.
      * @return A const reference to the base color texture descriptor.
      */
@@ -380,6 +397,7 @@ public:
         vcl::serialize(os, mAlphaMode, mAlphaCutoff);
         vcl::serialize(os, mNormalScale);
         vcl::serialize(os, mOcclusionStrength);
+        vcl::serialize(os, mEmissiveStrength);
         vcl::serialize(os, mTextureDescriptors);
         vcl::serialize(os, mDoubleSided);
         vcl::serialize(os, mClearcoat);
@@ -400,6 +418,7 @@ public:
         vcl::deserialize(is, mAlphaMode, mAlphaCutoff);
         vcl::deserialize(is, mNormalScale);
         vcl::deserialize(is, mOcclusionStrength);
+        vcl::deserialize(is, mEmissiveStrength);
         vcl::deserialize(is, mTextureDescriptors);
         vcl::deserialize(is, mDoubleSided);
         vcl::deserialize(is, mClearcoat);

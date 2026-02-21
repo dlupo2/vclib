@@ -52,9 +52,9 @@ class MaterialUniforms
     };
 
     // emissive color factor stored in RGB channels, alpha channel is unused so
-    // it can be used to store the alpha cutoff when needed
-    static inline std::array<float, 4> sEmissiveAlphaCutoffPack =
-        {0.0, 0.0, 0.0, 0.5};
+    // it can be used to store the emissive strength
+    static inline std::array<float, 4> sEmissivePack =
+        {0.0, 0.0, 0.0, 1.0};
 
     // settings packed in a vec4
     // .x : pbr settings
@@ -66,11 +66,15 @@ class MaterialUniforms
         1.0, // clearcoat normal scale
         0.0};
 
+    // alpha cutoff and maybe other alpha related settings can be stored here
+     static inline std::array<float, 4> sAlphaPack = {0.5, 0.0, 0.0, 0.0};
+
     static inline Uniform sBaseColorUniform;
     static inline Uniform sFactorsPackUniform;
-    static inline Uniform sEmissiveAlphaCutoffPackUniform ;
+    static inline Uniform sEmissivePackUniform ;
     static inline Uniform sSettingsUniform;
     static inline Uniform sClearcoatPackUniform;
+    static inline Uniform sAlphaPackUniform;
 
 public:
     MaterialUniforms() = delete;
@@ -92,7 +96,7 @@ public:
         if (m.alphaMode() ==
             Material::AlphaMode::ALPHA_MASK) { // alpha mode is MASK
             pbrSettingBits |= 1 << VCL_PBR_IS_ALPHA_MODE_MASK;
-            sEmissiveAlphaCutoffPack[3] = m.alphaCutoff();
+            sAlphaPack[0] = m.alphaCutoff();
         }
 
         if (imageBasedLighting) {
@@ -113,13 +117,15 @@ public:
         sFactorsPack[2] = m.metallic();
         sFactorsPack[3] = m.normalScale();
 
+
         sClearcoatPack[0] = m.clearcoat();
         sClearcoatPack[1] = m.clearcoatRoughness();
         sClearcoatPack[2] = m.clearcoatNormalScale();
 
-        sEmissiveAlphaCutoffPack[0] = m.emissiveColor().redF();
-        sEmissiveAlphaCutoffPack[1] = m.emissiveColor().greenF();
-        sEmissiveAlphaCutoffPack[2] = m.emissiveColor().blueF();
+        sEmissivePack[0] = m.emissiveColor().redF();
+        sEmissivePack[1] = m.emissiveColor().greenF();
+        sEmissivePack[2] = m.emissiveColor().blueF();
+        sEmissivePack[3] = m.emissiveStrength();
     }
 
     static void bind()
@@ -131,19 +137,22 @@ public:
                 Uniform("u_baseColorFactor", bgfx::UniformType::Vec4);
         if (!sFactorsPackUniform.isValid())
             sFactorsPackUniform = Uniform("u_FactorsPack", bgfx::UniformType::Vec4);
-        if (!sEmissiveAlphaCutoffPackUniform.isValid())
-            sEmissiveAlphaCutoffPackUniform =
-                Uniform("u_emissiveAlphaCutoffPack", bgfx::UniformType::Vec4);
+        if (!sEmissivePackUniform.isValid())
+            sEmissivePackUniform =
+                Uniform("u_emissivePack", bgfx::UniformType::Vec4);
         if (!sSettingsUniform.isValid())
             sSettingsUniform = Uniform("u_settings", bgfx::UniformType::Vec4);
         if (!sClearcoatPackUniform.isValid())
         	sClearcoatPackUniform = Uniform("u_clearcoatPack", bgfx::UniformType::Vec4);
+        if (! sAlphaPackUniform.isValid())
+        	sAlphaPackUniform = Uniform("u_alphaPack", bgfx::UniformType::Vec4);
 
         sBaseColorUniform.bind(&sBaseColor);
         sFactorsPackUniform.bind(&sFactorsPack);
-        sEmissiveAlphaCutoffPackUniform.bind(&sEmissiveAlphaCutoffPack);
+        sEmissivePackUniform.bind(&sEmissivePack);
         sSettingsUniform.bind(&sSettings);
         sClearcoatPackUniform.bind(&sClearcoatPack);
+        sAlphaPackUniform.bind(&sAlphaPack);
     }
 };
 

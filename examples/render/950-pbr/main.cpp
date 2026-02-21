@@ -44,6 +44,7 @@ int main(int argc, char** argv)
         CLEARCOAT_TEST,
         CLEARCOAT_WICKER,
         PORSCHE,
+        COMPARE_EMISSIVE_STRENGTH,
         COUNT_EXAMPLES
     };
 
@@ -60,9 +61,10 @@ int main(int argc, char** argv)
         "/gltf/CryptoG/CryptoG.gltf",
         "/gltf/ClearCoatTest/ClearCoatTest.gltf",
         "/gltf/ClearcoatWicker/ClearcoatWicker.gltf",
-        "/gltf/Porsche/Porsche.gltf"};
-        
-    uint selectedExample = CRYPTO_G;        
+        "/gltf/Porsche/Porsche.gltf",
+        "/gltf/CompareEmissiveStrength/CompareEmissiveStrength.gltf"};
+
+    uint selectedExample = COMPARE_EMISSIVE_STRENGTH;
 
     enum PanoramasExamples {
         COLOSSEUM_HDR,
@@ -152,6 +154,7 @@ int main(int argc, char** argv)
                       << std::endl;
             std::cout << "  clearcoatNormalScale: " << mat.clearcoatNormalScale()
                       << std::endl;
+            std::cout << "  emissiveStrength: " << mat.emissiveStrength() << std::endl;
             printTextureInfo(mat, BASE_COLOR);
             printTextureInfo(mat, METALLIC_ROUGHNESS);
             printTextureInfo(mat, NORMAL);
