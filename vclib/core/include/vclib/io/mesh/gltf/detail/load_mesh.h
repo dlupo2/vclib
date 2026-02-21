@@ -197,8 +197,7 @@ int loadGltfPrimitiveMaterial(
         }
 
         // specular
-        if(mat.extensions.contains("KHR_materials_specular"))
-        {
+        if(mat.extensions.contains("KHR_materials_specular")) {
             const auto& specularExt = mat.extensions.at("KHR_materials_specular");
 
             if(specularExt.Has("specularFactor"))
@@ -224,6 +223,7 @@ int loadGltfPrimitiveMaterial(
                     .Get("specularColorTexture")
                     .Get("index")
                     .GetNumberAsInt();
+        }
 
         // anisotropy
         if (mat.extensions.contains("KHR_materials_anisotropy")) {
@@ -353,6 +353,7 @@ int loadGltfPrimitiveMaterial(
                 mat, specularTextureId, Material::TextureType::SPECULAR);
             loadTextureInMaterial(
                 mat, specularColorTextureId, Material::TextureType::SPECULAR_COLOR);
+            loadTextureInMaterial(
                 mat, anisotropyTextureId, Material::TextureType::ANISOTROPY);
             m.pushMaterial(mat);
             idx = m.materialsNumber() - 1; // index of the added material

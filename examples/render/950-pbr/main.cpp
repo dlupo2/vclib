@@ -74,7 +74,7 @@ int main(int argc, char** argv)
         "/gltf/AnisotropyStrengthTest/AnisotropyStrengthTest.gltf",
         "/gltf/CarbonFibre/CarbonFibre.gltf"};
 
-    uint selectedExample = CARBON_FIBRE;
+    uint selectedExample = ANISOTROPY_DISC_TEST;
 
     enum PanoramasExamples {
         COLOSSEUM_HDR,
@@ -175,7 +175,7 @@ int main(int argc, char** argv)
                       << std::endl;
             std::cout << "  emissiveStrength: " << mat.emissiveStrength() << std::endl;
             std::cout << "  specularFactor: " << mat.specular() << std::endl;
-            std::cout << "  specularColorFactor: " << mat.specularColor()
+            std::cout << "  specularColorFactor: " << mat.specularColor() << std::endl;
             std::cout << "  anisotropyStrength: " << mat.anisotropyStrength()
                       << std::endl;
             std::cout << "  anisotropyRotation: " << mat.anisotropyRotation()

@@ -60,7 +60,6 @@ class MaterialUniforms
     // .x : pbr settings
     static inline std::array<float, 4> sSettings = {0.0, 0.0, 0.0, 0.0};
 
-<<<<<<< HEAD
     static inline std::array<float, 4> sClearcoatPack = {
         0.0, // clearcoat factor
         0.0, // clearcoat roughness factor
