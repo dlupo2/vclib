@@ -55,7 +55,6 @@ int main(int argc, char** argv)
         "/gltf/NormalTangentMirrorTest/NormalTangentMirrorTest.gltf",
         "/gltf/CompareAmbientOcclusion/CompareAmbientOcclusion.gltf",
         "/gltf/DamagedHelmet/DamagedHelmet.gltf",
-<<<<<<< HEAD
         "/gltf/Baguette/Baguette.gltf",
         "/gltf/ARScope/ARScope.gltf",
         "/gltf/Fedora/Fedora.gltf",
@@ -89,7 +88,7 @@ int main(int argc, char** argv)
         "/panoramas/uffizi.ktx",
         "/panoramas/st_peter.exr"};
 
-    uint selectedPanorama = COLOSSEUM_HDR;
+    uint selectedPanorama = UFFIZI_EXR;
 
     std::vector<vcl::TriMesh> meshes = vcl::loadMeshes<vcl::TriMesh>(
         VCLIB_EXAMPLE_MESHES_PATH + gltfExampleFilenames[selectedExample]);

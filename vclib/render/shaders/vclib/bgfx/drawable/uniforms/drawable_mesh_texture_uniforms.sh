@@ -23,7 +23,6 @@ SAMPLER2D(s_tex6, 6);
 SAMPLER2D(s_tex7, 7);
 SAMPLER2D(s_tex8, 8);
 SAMPLER2D(s_tex9, 9);
-SAMPLER2D(s_tex10, 10);
 
 vec4 textureStage(uint stage, vec2 texcoord)
 {
@@ -48,8 +47,6 @@ vec4 textureStage(uint stage, vec2 texcoord)
             return texture2D(s_tex8, texcoord);
         case 9u:
             return texture2D(s_tex9, texcoord);
-        case 10u:
-            return texture2D(s_tex10, texcoord);
         default:
             // should never happen, return a magenta color to easily spot the error
             return vec4(1.0, 0.0, 1.0, 1.0);

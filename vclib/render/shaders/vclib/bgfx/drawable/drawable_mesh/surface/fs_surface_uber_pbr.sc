@@ -206,6 +206,7 @@ void main()
         float clearcoatNoV = clampedDot(clearcoatNormal, V);
 
         vec3 f0_dielectric = min(vec3_splat(0.04) * specularColor, vec3_splat(1.0));
+        vec3 f90 = vec3_splat(1.0);
 
         // diffuse light
         vec3 diffuseLight = textureCube(s_irradiance, leftHand(normal)).rgb;
