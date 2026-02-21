@@ -186,12 +186,51 @@ void main()
     if (useTexture && isSpecularColorTextureAvailable())
         specularColor *= specularColorTex(texcoord).rgb;
 
+    float anisotropyStrength = u_anisotropyStrength;
+    vec2 anisotropyRotation, anisotropyDirection;
+    vec3 anisotropicTangent = vec3_splat(0.0), anisotropicBitangent = vec3_splat(0.0);
+    if (anisotropyStrength > 0.0)
+    {
+        anisotropyRotation = vec2(cos(u_anisotropyRotation), sin(u_anisotropyRotation));
+        anisotropyDirection = vec2(1.0, 0.0);
+
+        if (useTexture && isAnisotropyTextureAvailable())
+        {
+            vec3 anisotropyData = anisotropyTex(texcoord).rgb;
+
+            anisotropyDirection = anisotropyData.rg;
+            anisotropyDirection *= 2.0;
+            anisotropyDirection -= 1.0; // remap from [0,1] to [-1,1]
+            anisotropyDirection = normalize(anisotropyDirection);
+
+            anisotropyStrength *= anisotropyData.b; // anisotropy strength in blue channel
+            anisotropyStrength = clamp(anisotropyStrength, 0.0, 1.0);
+        }
+
+        // rotate anisotropy
+        mat2 anisotropyRot = mat2(anisotropyRotation.x, anisotropyRotation.y, -anisotropyRotation.y, anisotropyRotation.x);
+        anisotropyDirection = normalize(mul(anisotropyDirection, anisotropyRot));
+
+        anisotropicTangent = normalize(mul(vec3(anisotropyDirection, 0.0), tangentFrame));
+        anisotropicBitangent = normalize(cross(normal, anisotropicTangent));
+    }
+
     if(useImageBasedLighting(u_pbr_settings))
     {
         // view direction
         vec3 V = normalize(-v_position); // camera is at the origin
 
-        vec3 reflection = normalize(reflect(-V, normal));
+        vec3 reflection;
+        if(anisotropyStrength > 0.0)
+        {
+            vec3 bentNormal = bendNormal(normal, V, anisotropicBitangent, anisotropyStrength, roughness);
+            reflection = normalize(reflect(-V, bentNormal));
+        }
+        else
+        {
+            reflection = normalize(reflect(-V, normal));
+        }
+
         vec3 clearcoatReflection = normalize(reflect(-V, clearcoatNormal));
 
         reflection = normalize(mul(u_invView, vec4(reflection, 0.0)).xyz);
@@ -280,6 +319,9 @@ void main()
             clearcoatNormal,
             specular,
             specularColor,
+            anisotropyStrength,
+            anisotropicTangent,
+            anisotropicBitangent,
             u_exposure,
             u_toneMapping
         );

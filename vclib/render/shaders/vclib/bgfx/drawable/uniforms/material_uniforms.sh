@@ -30,6 +30,7 @@ uniform vec4 u_alphaPack;
 uniform vec4 u_settings;
 uniform vec4 u_clearcoatPack;
 uniform vec4 u_specularPack;
+uniform vec4 u_anisotropyPack;
 
 #define u_occlusionStrength u_FactorsPack.r
 #define u_roughnessFactor u_FactorsPack.g
@@ -49,5 +50,8 @@ uniform vec4 u_specularPack;
 
 #define u_specularColorFactor u_specularPack.rgb
 #define u_specularFactor u_specularPack.a
+
+#define u_anisotropyStrength u_anisotropyPack.x
+#define u_anisotropyRotation u_anisotropyPack.y
 
 #endif // VCL_EXT_BGFX_UNIFORMS_MATERIAL_UNIFORMS_SH

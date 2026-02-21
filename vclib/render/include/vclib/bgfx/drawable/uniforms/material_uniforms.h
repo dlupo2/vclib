@@ -60,6 +60,7 @@ class MaterialUniforms
     // .x : pbr settings
     static inline std::array<float, 4> sSettings = {0.0, 0.0, 0.0, 0.0};
 
+<<<<<<< HEAD
     static inline std::array<float, 4> sClearcoatPack = {
         0.0, // clearcoat factor
         0.0, // clearcoat roughness factor
@@ -72,15 +73,17 @@ class MaterialUniforms
     // specular color (RGB) and specular (A)
     static inline std::array<float, 4> sSpecularPack = {1.0, 1.0, 1.0, 1.0};
 
+    static inline std::array<float, 4> sAnisotropyPack = {0.0, 0.0, 0.0, 0.0};
+
     static inline Uniform sBaseColorUniform;
     static inline Uniform sFactorsPackUniform;
     static inline Uniform sEmissivePackUniform ;
     static inline Uniform sSettingsUniform;
     static inline Uniform sClearcoatPackUniform;
     static inline Uniform sAlphaPackUniform;
-
     static inline Uniform sSpecularPackUniform;
-
+    static inline Uniform sAnisotropyPackUniform;
+    
 public:
     MaterialUniforms() = delete;
 
@@ -135,6 +138,9 @@ public:
         sSpecularPack[1] = m.specularColor()[1];
         sSpecularPack[2] = m.specularColor()[2];
         sSpecularPack[3] = m.specular();
+
+        sAnisotropyPack[0] = m.anisotropyStrength();
+        sAnisotropyPack[1] = m.anisotropyRotation();
     }
 
     static void bind()
@@ -158,6 +164,9 @@ public:
 
         if (!sSpecularPackUniform.isValid())
             sSpecularPackUniform = Uniform("u_specularPack", bgfx::UniformType::Vec4);
+        if (!sAnisotropyPackUniform.isValid())
+            sAnisotropyPackUniform =
+                Uniform("u_anisotropyPack", bgfx::UniformType::Vec4);
 
         sBaseColorUniform.bind(&sBaseColor);
         sFactorsPackUniform.bind(&sFactorsPack);
@@ -166,6 +175,7 @@ public:
         sClearcoatPackUniform.bind(&sClearcoatPack);
         sAlphaPackUniform.bind(&sAlphaPack);
         sSpecularPackUniform.bind(&sSpecularPack);
+        sAnisotropyPackUniform.bind(&sAnisotropyPack);
     }
 };
 

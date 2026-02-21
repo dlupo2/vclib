@@ -62,6 +62,7 @@ public:
         CLEARCOAT_NORMAL,
         SPECULAR,
         SPECULAR_COLOR,
+        ANISOTROPY,
         BRDF_LUT,
         COUNT
     };

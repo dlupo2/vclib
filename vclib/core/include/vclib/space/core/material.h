@@ -73,6 +73,7 @@ public:
         CLEARCOAT_NORMAL,
         SPECULAR,
         SPECULAR_COLOR,
+        ANISOTROPY, ///< The anisotropy texture. Stored in linear color space.
         COUNT      ///< Utility value to get the number of texture types.
     };
 
@@ -87,7 +88,8 @@ public:
                 "clearcoatTex",
                 "clearcoatRoughnessTex",
                 "specularTex",
-                "specularColorTex"};
+                "specularColorTex",
+                "anisotropyTex"};
 
 private:
     inline static const uint N_TEXTURE_TYPE =
@@ -131,6 +133,10 @@ private:
 
     // needs to be HDR
     Point3f mSpecularColor = Point3f(1.0, 1.0, 1.0);
+
+    float mAnisotropyStrength = 0.0f;
+
+    float mAnisotropyRotation = 0.0f;
 
 public:
     /**
@@ -351,6 +357,31 @@ public:
     Point3f& specularColor() { return mSpecularColor; }
 
     /**
+     * @brief Gets the anisotropy strength of the material.
+     * @return The anisotropy strength, in the range [0.0, 1.0].
+     */
+    float anisotropyStrength() const { return mAnisotropyStrength; }
+
+    /**
+     * @brief Gets a mutable reference to the anisotropy strength of the material.
+     * @return A reference to the anisotropy strength.
+     */
+    float& anisotropyStrength() { return mAnisotropyStrength; }
+
+    /**
+     * @brief Gets the anisotropy rotation of the material.
+     * @return The anisotropy rotation, in radians.
+     */
+    float anisotropyRotation() const { return mAnisotropyRotation; }
+
+    /**
+     * @brief Gets a mutable reference to the anisotropy rotation of the material.
+     * @return A reference to the anisotropy rotation.
+     */
+    float& anisotropyRotation() { return mAnisotropyRotation; }
+
+
+    /**
      * @brief Gets the texture descriptor for the base color texture.
      * @return A const reference to the base color texture descriptor.
      */
@@ -433,6 +464,8 @@ public:
         vcl::serialize(os, mEmissiveStrength);
         vcl::serialize(os, mSpecular);
         mSpecularColor.serialize(os);
+        vcl::serialize(os, mAnisotropyStrength);
+        vcl::serialize(os, mAnisotropyRotation);
         vcl::serialize(os, mTextureDescriptors);
         vcl::serialize(os, mDoubleSided);
         vcl::serialize(os, mClearcoat);
@@ -456,6 +489,8 @@ public:
         vcl::deserialize(is, mEmissiveStrength);
         vcl::deserialize(is, mSpecular);
         mSpecularColor.deserialize(is);
+        vcl::deserialize(is, mAnisotropyStrength);
+        vcl::deserialize(is, mAnisotropyRotation);
         vcl::deserialize(is, mTextureDescriptors);
         vcl::deserialize(is, mDoubleSided);
         vcl::deserialize(is, mClearcoat);
@@ -494,6 +529,7 @@ public:
         case TextureType::CLEARCOAT_ROUGHNESS:
         case TextureType::CLEARCOAT_NORMAL:
         case TextureType::SPECULAR:
+        case TextureType::ANISOTROPY:
         default: return Image::ColorSpace::LINEAR;
         }
     }

@@ -67,7 +67,8 @@ vec4 textureStage(uint stage, vec2 texcoord)
 // 7 -> clearcoat normal
 // 8 -> specular
 // 9 -> specular color
-// 10 -> brdf lut
+// 10 -> anisotropy
+// 11 -> brdf lut
 //
 // to get the actual stage index: textureStageBitField(u_textureStagesZ, pos)
 
@@ -171,14 +172,24 @@ vec4 specularColorTex(vec2 texcoord)
     return textureStage(textureStageBitField(u_textureStagesW, 1), texcoord);
 }
 
-bool isBrdfLutTextureAvailable()
+bool isAnisotropyTextureAvailable()
 {
     return textureStageBitField(u_textureStagesW, 2) != 0xF;
 }
 
-vec4 brdfLutTex(vec2 texcoord)
+vec4 anisotropyTex(vec2 texcoord)
 {
     return textureStage(textureStageBitField(u_textureStagesW, 2), texcoord);
+}
+
+bool isBrdfLutTextureAvailable()
+{
+    return textureStageBitField(u_textureStagesW, 3) != 0xF;
+}
+
+vec4 brdfLutTex(vec2 texcoord)
+{
+    return textureStage(textureStageBitField(u_textureStagesW, 3), texcoord);
 }
 
 #endif // VCL_EXT_BGFX_UNIFORMS_DRAWABLE_MESH_TEXTURE_UNIFORMS_SH

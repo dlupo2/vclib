@@ -79,6 +79,10 @@ int loadGltfPrimitiveMaterial(
         int specularTextureId = -1;
         int specularColorTextureId = -1;
 
+        double anisotropyStrength = 0.0;
+        double anisotropyRotation = 0.0;
+        int anisotropyTextureId = -1;
+
         const tinygltf::Material& mat = model.materials[p.material];
 
         std::string matName = mat.name;
@@ -220,6 +224,30 @@ int loadGltfPrimitiveMaterial(
                     .Get("specularColorTexture")
                     .Get("index")
                     .GetNumberAsInt();
+
+        // anisotropy
+        if (mat.extensions.contains("KHR_materials_anisotropy")) {
+            const auto& anisotropyExt =
+                mat.extensions.at("KHR_materials_anisotropy");
+
+            if (anisotropyExt.Has("anisotropyStrength")) {
+                anisotropyStrength = anisotropyExt
+                    .Get("anisotropyStrength")
+                    .GetNumberAsDouble();
+            }
+
+            if (anisotropyExt.Has("anisotropyRotation")) {
+                anisotropyRotation = anisotropyExt
+                    .Get("anisotropyRotation")
+                    .GetNumberAsDouble();
+            }
+
+            if (anisotropyExt.Has("anisotropyTexture")) {
+                anisotropyTextureId = anisotropyExt
+                    .Get("anisotropyTexture")
+                    .Get("index")
+                    .GetNumberAsInt();
+            }
         }
 
         // function to load a texture in a material
@@ -299,8 +327,10 @@ int loadGltfPrimitiveMaterial(
             mat.clearcoatRoughness()   = clearcoatRoughness;
             mat.clearcoatNormalScale() = clearcoatNormalScale;
             mat.emissiveStrength()     = emissiveStrength;
-            mat.specular()          = specular;
-            mat.specularColor()     = specularColor;
+            mat.specular()             = specular;
+            mat.specularColor()        = specularColor;
+            mat.anisotropyStrength()   = anisotropyStrength;
+            mat.anisotropyRotation()   = anisotropyRotation;
             loadTextureInMaterial(
                 mat, baseColorTextureId, Material::TextureType::BASE_COLOR);
             loadTextureInMaterial(
@@ -323,6 +353,7 @@ int loadGltfPrimitiveMaterial(
                 mat, specularTextureId, Material::TextureType::SPECULAR);
             loadTextureInMaterial(
                 mat, specularColorTextureId, Material::TextureType::SPECULAR_COLOR);
+                mat, anisotropyTextureId, Material::TextureType::ANISOTROPY);
             m.pushMaterial(mat);
             idx = m.materialsNumber() - 1; // index of the added material
             if constexpr (HasColor<MeshType>) {

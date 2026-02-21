@@ -46,6 +46,10 @@ int main(int argc, char** argv)
         PORSCHE,
         COMPARE_EMISSIVE_STRENGTH,
         SPECULAR_TEST,
+        ANISOTROPY_DISC_TEST,
+        ANISOTROPY_ROTATION_TEST,
+        ANISOTROPY_STRENGTH_TEST,
+        CARBON_FIBRE,
         COUNT_EXAMPLES
     };
 
@@ -64,9 +68,13 @@ int main(int argc, char** argv)
         "/gltf/ClearcoatWicker/ClearcoatWicker.gltf",
         "/gltf/Porsche/Porsche.gltf",
         "/gltf/CompareEmissiveStrength/CompareEmissiveStrength.gltf",
-        "/gltf/SpecularTest/SpecularTest.gltf"};
+        "/gltf/SpecularTest/SpecularTest.gltf",
+        "/gltf/AnisotropyDiscTest/AnisotropyDiscTest.gltf",
+        "/gltf/AnisotropyRotationTest/AnisotropyRotationTest.gltf",
+        "/gltf/AnisotropyStrengthTest/AnisotropyStrengthTest.gltf",
+        "/gltf/CarbonFibre/CarbonFibre.gltf"};
 
-    uint selectedExample = SPECULAR_TEST;
+    uint selectedExample = CARBON_FIBRE;
 
     enum PanoramasExamples {
         COLOSSEUM_HDR,
@@ -124,6 +132,9 @@ int main(int argc, char** argv)
         }
         else if (type == SPECULAR_COLOR) {
             typeName = "specularColor";
+		}
+        else if (type == ANISOTROPY) {
+            typeName = "anisotropy";
         }
 
         std::cout << "  " << typeName << "Texture: ";
@@ -165,6 +176,9 @@ int main(int argc, char** argv)
             std::cout << "  emissiveStrength: " << mat.emissiveStrength() << std::endl;
             std::cout << "  specularFactor: " << mat.specular() << std::endl;
             std::cout << "  specularColorFactor: " << mat.specularColor()
+            std::cout << "  anisotropyStrength: " << mat.anisotropyStrength()
+                      << std::endl;
+            std::cout << "  anisotropyRotation: " << mat.anisotropyRotation()
                       << std::endl;
             printTextureInfo(mat, BASE_COLOR);
             printTextureInfo(mat, METALLIC_ROUGHNESS);
@@ -176,6 +190,7 @@ int main(int argc, char** argv)
             printTextureInfo(mat, CLEARCOAT_NORMAL);
             printTextureInfo(mat, SPECULAR);
             printTextureInfo(mat, SPECULAR_COLOR);
+            printTextureInfo(mat, ANISOTROPY);
             std::cout << "  ------------------------" << std::endl;
         }
         std::cout << "------------------------" << std::endl;
