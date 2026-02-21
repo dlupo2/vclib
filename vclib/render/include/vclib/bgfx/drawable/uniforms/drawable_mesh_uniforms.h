@@ -28,44 +28,116 @@
 
 namespace vcl {
 
+/**
+ * @brief The DrawableMeshUniforms class is responsible for managing the
+ * shader uniforms related to a drawable mesh.
+ *
+ * It provides a static interface to set the uniform data based on the
+ * current mesh data and to bind the uniforms to the shader programs.
+ */
 class DrawableMeshUniforms
 {
-    float mMeshColor[4] = {0.5, 0.5, 0.5, 1.0};
+    inline static std::array<float, 4> sMeshColor = {0.5, 0.5, 0.5, 1.0};
 
-    float mMeshData[4] = {
-        0.0, // as uint: first chunk primitive id drawn
-        0.0,
-        0.0,
-        0.0};
+    // sMeshData[0]: as uint, mesh id
+    // sMeshData[1]: as uint, first chunk primitive id drawn
+    // sMeshData[2]: 8 texture stages with 4 bit each, to specify if texture is
+    //    used (value != 15) and which stage is used for each texture (as uint):
+    //    none|none|brdfLut|emissive|occlusion|normal|metallRough|baseColor
+    inline static std::array<float, 4> sMeshData =
+        {0.0, 0.0, std::bit_cast<float>(0xFFFFFFFF), std::bit_cast<float>(0xFFFFFFFF)};
 
-    Uniform mMeshColorUniform = Uniform("u_meshColor", bgfx::UniformType::Vec4);
-    Uniform mMeshDataUniform  = Uniform("u_meshData", bgfx::UniformType::Vec4);
+    inline static Uniform sMeshColorUniform;
+    inline static Uniform sMeshDataUniform;
 
 public:
-    DrawableMeshUniforms() = default;
+    enum class TextureType {
+        BASE_COLOR,
+        METALLIC_ROUGHNESS,
+        NORMAL,
+        OCCLUSION,
+        EMISSIVE,
+        CLEARCOAT,
+        CLEARCOAT_ROUGHNESS,
+        CLEARCOAT_NORMAL,
+        BRDF_LUT,
+        COUNT
+    };
 
-    const float* currentMeshColor() const { return mMeshColor; }
+    DrawableMeshUniforms() = delete;
 
     template<MeshConcept MeshType>
-    void update(const MeshType& m)
+    static void setColor(const MeshType& m)
     {
         if constexpr (HasColor<MeshType>) {
-            mMeshColor[0] = m.color().redF();
-            mMeshColor[1] = m.color().greenF();
-            mMeshColor[2] = m.color().blueF();
-            mMeshColor[3] = m.color().alphaF();
+            sMeshColor[0] = m.color().redF();
+            sMeshColor[1] = m.color().greenF();
+            sMeshColor[2] = m.color().blueF();
+            sMeshColor[3] = m.color().alphaF();
         }
     }
 
-    void updateFirstChunkIndex(uint firstChunkIndex)
+    static void setMeshId(uint meshId)
     {
-        mMeshData[0] = std::bit_cast<float>(firstChunkIndex);
+        sMeshData[0] = std::bit_cast<float>(meshId);
     }
 
-    void bind() const
+    static void resetTextureStages()
     {
-        mMeshColorUniform.bind(mMeshColor);
-        mMeshDataUniform.bind(mMeshData);
+        // 8 texture stages with 4 bit each, all set to 15 (not used)
+        sMeshData[2] = std::bit_cast<float>(0xFFFFFFFF);
+        sMeshData[3] = std::bit_cast<float>(0xFFFFFFFF);
+    }
+
+    static void setTextureStage(TextureType type, uint8_t stage)
+    {
+        assert(toUnderlying(type) < toUnderlying(TextureType::COUNT));
+
+        setZWTextureStage(toUnderlying(type), stage);
+    }
+
+    static void setFirstChunkIndex(uint firstChunkIndex)
+    {
+        sMeshData[1] = std::bit_cast<float>(firstChunkIndex);
+    }
+
+    static void bind()
+    {
+        // lazy initialization
+        // to avoid creating uniforms before bgfx is initialized
+        if (!sMeshColorUniform.isValid())
+            sMeshColorUniform = Uniform("u_meshColor", bgfx::UniformType::Vec4);
+        if (!sMeshDataUniform.isValid())
+            sMeshDataUniform = Uniform("u_meshData", bgfx::UniformType::Vec4);
+        sMeshColorUniform.bind(sMeshColor.data());
+        sMeshDataUniform.bind(sMeshData.data());
+    }
+
+private:
+    static void setZWTextureStage(uint8_t pos, uint8_t stage)
+    {
+        float& component = pos < 8 ? sMeshData[2] : sMeshData[3];
+        uint value = std::bit_cast<uint>(component);
+
+        set4BitStageValue(value, pos % 8, stage);
+
+        component = std::bit_cast<float>(value);
+    }
+
+    static void set4BitStageValue(uint& value, uint8_t pos, uint8_t stage)
+    {
+        // value is a uint where 8 stages with 4 bit each are encoded
+        // pos is a value between 0 and 7 to specify the bit positions to set
+        // stage is a value between 0 and 15 to specify the stage to set
+        // only the 4 bits corresponding to pos are set to stage, the others are
+        // left unchanged
+
+        assert(pos < 8);
+        assert(stage < 16);
+
+        uint mask = 0xF << (pos * 4); // mask to clear the bits at pos
+        // clear bits at pos and set new stage
+        value = (value & ~mask) | (uint(stage) << (pos * 4));
     }
 };
 

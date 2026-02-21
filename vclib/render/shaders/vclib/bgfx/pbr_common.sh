@@ -26,12 +26,12 @@
 #include <bgfx_shader.sh>
 #include <bgfx_compute.sh>
 
-#include <vclib/bgfx/drawable/mesh/pbr_macros.h>
+#include <vclib/bgfx/drawable/mesh/mesh_render_buffers_macros.h>
 
 // Constants
 
-#define PI                                            3.141592653589793
-#define GAMMA                                         2.2
+#define PI    3.141592653589793
+#define GAMMA 2.2
 
 // Settings
 
@@ -42,12 +42,6 @@
 #define isAlphaModeMask(settings)             checkSetting(settings, VCL_PBR_IS_ALPHA_MODE_MASK)
 #define useImageBasedLighting(settings)       checkSetting(settings, VCL_PBR_IMAGE_BASED_LIGHTING)
 
-#define isBaseColorTextureAvailable(settings)         checkSetting(settings, VCL_PBR_TEXTURE_BASE_COLOR)
-#define isMetallicRoughnessTextureAvailable(settings) checkSetting(settings, VCL_PBR_TEXTURE_METALLIC_ROUGHNESS)
-#define isNormalTextureAvailable(settings)            checkSetting(settings, VCL_PBR_TEXTURE_NORMAL)
-#define isOcclusionTextureAvailable(settings)         checkSetting(settings, VCL_PBR_TEXTURE_OCCLUSION)
-#define isEmissiveTextureAvailable(settings)          checkSetting(settings, VCL_PBR_TEXTURE_EMISSIVE)
-
 // Lighting settings, may not be definitive
 
 #define LIGHT_COUNT                                   1
@@ -57,13 +51,13 @@
 
 // precomputed default light directions from https://github.com/KhronosGroup/glTF-Sample-Viewer
 
-#define LIGHT_KEY_DIR                                 vec3(0.5000000108991332,-0.7071067857071073,-0.49999999460696354)
-#define LIGHT_FILL_DIR                                vec3(-0.4999998538661192,0.7071068849655084,0.500000052966632)
-#define LIGHT_KEY_DIR_VIEW                            mul(vec4(0.5000000108991332,-0.7071067857071073,-0.49999999460696354,0.0), u_invView).xyz
-#define LIGHT_FILL_DIR_VIEW                           mul(vec4(-0.4999998538661192,0.7071068849655084,0.500000052966632,0.0), u_invView).xyz
+#define LIGHT_KEY_DIR       vec3(0.5000000108991332,-0.7071067857071073,-0.49999999460696354)
+#define LIGHT_FILL_DIR      vec3(-0.4999998538661192,0.7071068849655084,0.500000052966632)
+#define LIGHT_KEY_DIR_VIEW  mul(vec4(0.5000000108991332,-0.7071067857071073,-0.49999999460696354,0.0), u_invView).xyz
+#define LIGHT_FILL_DIR_VIEW mul(vec4(-0.4999998538661192,0.7071068849655084,0.500000052966632,0.0), u_invView).xyz
 
-#define DISTRIBUTION_LAMBERTIAN                     0u
-#define DISTRIBUTION_GGX                            1u
+#define DISTRIBUTION_LAMBERTIAN 0u
+#define DISTRIBUTION_GGX        1u
 
 #define TONEMAP_NONE                     0
 #define TONEMAP_BASIC                    1
@@ -746,6 +740,9 @@ vec4 pbrColorLights(
     float metallic,
     float roughness,
     vec3 emissive,
+    float clearcoat,
+    float clearcoatRoughness,
+    vec3 clearcoatNormal,
     float exposure,
     int toneMapping)
 {
@@ -757,6 +754,9 @@ vec4 pbrColorLights(
     vec3 V = normalize(cameraEyePos - vPos);
     
     float NoV = clampedDot(normal, V);
+    float clearcoatNoV = clampedDot(clearcoatNormal, V);
+
+    vec3 clearcoatFresnel = clearcoat * F_Schlick(f0_dielectric, f90, clearcoatNoV);
 
     UNROLL
     for(int i = 0; i < LIGHT_COUNT; ++i)
@@ -764,7 +764,9 @@ vec4 pbrColorLights(
         // incoming light direction and contribution
         vec3 lightDir = normalize(-lightDirs[i]);
         float NoL = clampedDot(normal, lightDir);
+        float clearcoatNoL = clampedDot(clearcoatNormal, lightDir);
         vec3 lightIntensity = lightIntensities[i] * lightColors[i] * NoL;
+        vec3 clearcoatLightIntensity = lightIntensities[i] * lightColors[i] * clearcoatNoL;
 
         // halfway vector, same angle with both view direction and incoming light direction
         // corresponds to the normal that one microfacet must have to directly reflect the light into the eye
@@ -772,6 +774,8 @@ vec4 pbrColorLights(
         // related dot products
         float NoH = clampedDot(normal, H);
         float VoH = clampedDot(V, H);
+
+        float clearcoatNoH = clampedDot(clearcoatNormal, H);
 
         // Fresnel factors for both dielectric and metallic surfaces
         // 0.04 is an approximation of F0 averaged around many dielectric materials
@@ -792,10 +796,14 @@ vec4 pbrColorLights(
         // dielectric surfaces reflect both diffuse and specular light
         vec3 l_dielectric_brdf = mix(l_diffuse, l_specular_dielectric, dielectric_fresnel);
 
+        vec3 l_clearcoat_brdf = clearcoatLightIntensity * pbrSpecular(clearcoatNoV, clearcoatNoH, clearcoatNoL, clearcoatRoughness);
+
         // final color is a mix of both dielectric and metallic BRDFs based on the metalness of the surface
         // the interpolation is needed as we consider the metallic value as ranged instead of binary
         vec3 l_color = mix(l_dielectric_brdf, l_metal_brdf, metallic);
 
+        l_color = mix(l_color, l_clearcoat_brdf, clearcoatFresnel);
+        
         finalColor += l_color;
     }
 
@@ -847,6 +855,8 @@ vec4 pbrColorIbl(
     float metallic,
     float occlusion,
     vec3 emissive,
+    vec3 clearcoatFresnel,
+    vec3 clearcoatSpecularLight,
     float exposure,
     int toneMapping)
 {
@@ -862,6 +872,8 @@ vec4 pbrColorIbl(
     vec3 f_dielectric_brdf_ibl = mix(f_diffuse, f_specular_dielectric, dielectricFresnel);
 
     finalColor = mix(f_dielectric_brdf_ibl, f_metal_brdf_ibl, metallic);
+
+    finalColor = mix(finalColor, clearcoatSpecularLight, clearcoatFresnel);
 
     finalColor *= occlusion;
 

@@ -23,8 +23,6 @@
 #ifndef VCL_BGFX_DRAWABLE_DRAWABLE_ENVIRONMENT_H
 #define VCL_BGFX_DRAWABLE_DRAWABLE_ENVIRONMENT_H
 
-#include "uniforms/drawable_environment_uniforms.h"
-
 #include <vclib/bgfx/buffers.h>
 #include <vclib/bgfx/texture.h>
 #include <vclib/bgfx/uniform.h>
@@ -59,13 +57,11 @@ class DrawableEnvironment
     const Uniform mSpecularCubeSamplerUniform =
         Uniform("s_specular", bgfx::UniformType::Sampler);
     const Uniform mBrdfLutSamplerUniform =
-        Uniform("s_brdf_lut", bgfx::UniformType::Sampler);
+        Uniform("s_tex8", bgfx::UniformType::Sampler);
 
     std::string mImagePath;
 
     uint8_t mSpecularMipLevels = 0;
-
-    DrawableEnvironmentUniforms mDataUniforms;
 
     Texture mHdrTexture;
     Texture mCubeMapTexture;
@@ -105,7 +101,6 @@ public:
         using std::swap;
         swap(mImagePath, other.mImagePath);
         swap(mSpecularMipLevels, other.mSpecularMipLevels);
-        swap(mDataUniforms, other.mDataUniforms);
         swap(mHdrTexture, other.mHdrTexture);
         swap(mCubeMapTexture, other.mCubeMapTexture);
         swap(mIrradianceTexture, other.mIrradianceTexture);
