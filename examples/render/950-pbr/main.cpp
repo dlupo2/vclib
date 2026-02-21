@@ -45,6 +45,7 @@ int main(int argc, char** argv)
         CLEARCOAT_WICKER,
         PORSCHE,
         COMPARE_EMISSIVE_STRENGTH,
+        SPECULAR_TEST,
         COUNT_EXAMPLES
     };
 
@@ -54,6 +55,7 @@ int main(int argc, char** argv)
         "/gltf/NormalTangentMirrorTest/NormalTangentMirrorTest.gltf",
         "/gltf/CompareAmbientOcclusion/CompareAmbientOcclusion.gltf",
         "/gltf/DamagedHelmet/DamagedHelmet.gltf",
+<<<<<<< HEAD
         "/gltf/Baguette/Baguette.gltf",
         "/gltf/ARScope/ARScope.gltf",
         "/gltf/Fedora/Fedora.gltf",
@@ -62,9 +64,10 @@ int main(int argc, char** argv)
         "/gltf/ClearCoatTest/ClearCoatTest.gltf",
         "/gltf/ClearcoatWicker/ClearcoatWicker.gltf",
         "/gltf/Porsche/Porsche.gltf",
-        "/gltf/CompareEmissiveStrength/CompareEmissiveStrength.gltf"};
+        "/gltf/CompareEmissiveStrength/CompareEmissiveStrength.gltf",
+        "/gltf/SpecularTest/SpecularTest.gltf"};
 
-    uint selectedExample = COMPARE_EMISSIVE_STRENGTH;
+    uint selectedExample = SPECULAR_TEST;
 
     enum PanoramasExamples {
         COLOSSEUM_HDR,
@@ -117,6 +120,12 @@ int main(int argc, char** argv)
         else if (type == CLEARCOAT_NORMAL) {
             typeName = "clearcoatNormal";
         }
+        else if (type == SPECULAR) {
+            typeName = "specular";
+        }
+        else if (type == SPECULAR_COLOR) {
+            typeName = "specularColor";
+        }
 
         std::cout << "  " << typeName << "Texture: ";
         if (!texture.isNull()) {
@@ -155,6 +164,9 @@ int main(int argc, char** argv)
             std::cout << "  clearcoatNormalScale: " << mat.clearcoatNormalScale()
                       << std::endl;
             std::cout << "  emissiveStrength: " << mat.emissiveStrength() << std::endl;
+            std::cout << "  specularFactor: " << mat.specular() << std::endl;
+            std::cout << "  specularColorFactor: " << mat.specularColor()
+                      << std::endl;
             printTextureInfo(mat, BASE_COLOR);
             printTextureInfo(mat, METALLIC_ROUGHNESS);
             printTextureInfo(mat, NORMAL);
@@ -163,6 +175,8 @@ int main(int argc, char** argv)
             printTextureInfo(mat, CLEARCOAT);
             printTextureInfo(mat, CLEARCOAT_ROUGHNESS);
             printTextureInfo(mat, CLEARCOAT_NORMAL);
+            printTextureInfo(mat, SPECULAR);
+            printTextureInfo(mat, SPECULAR_COLOR);
             std::cout << "  ------------------------" << std::endl;
         }
         std::cout << "------------------------" << std::endl;

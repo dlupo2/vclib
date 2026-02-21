@@ -60,6 +60,8 @@ public:
         CLEARCOAT,
         CLEARCOAT_ROUGHNESS,
         CLEARCOAT_NORMAL,
+        SPECULAR,
+        SPECULAR_COLOR,
         BRDF_LUT,
         COUNT
     };

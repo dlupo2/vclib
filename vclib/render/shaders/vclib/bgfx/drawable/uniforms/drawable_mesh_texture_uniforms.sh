@@ -22,6 +22,8 @@ SAMPLER2D(s_tex5, 5);
 SAMPLER2D(s_tex6, 6);
 SAMPLER2D(s_tex7, 7);
 SAMPLER2D(s_tex8, 8);
+SAMPLER2D(s_tex9, 9);
+SAMPLER2D(s_tex10, 10);
 
 vec4 textureStage(uint stage, vec2 texcoord)
 {
@@ -44,6 +46,10 @@ vec4 textureStage(uint stage, vec2 texcoord)
             return texture2D(s_tex7, texcoord);
         case 8u:
             return texture2D(s_tex8, texcoord);
+        case 9u:
+            return texture2D(s_tex9, texcoord);
+        case 10u:
+            return texture2D(s_tex10, texcoord);
         default:
             // should never happen, return a magenta color to easily spot the error
             return vec4(1.0, 0.0, 1.0, 1.0);
@@ -62,7 +68,9 @@ vec4 textureStage(uint stage, vec2 texcoord)
 // 5 -> clearcoat
 // 6 -> clearcoat roughness
 // 7 -> clearcoat normal
-// 8 -> brdf lut
+// 8 -> specular
+// 9 -> specular color
+// 10 -> brdf lut
 //
 // to get the actual stage index: textureStageBitField(u_textureStagesZ, pos)
 
@@ -121,7 +129,6 @@ bool isClearcoatTextureAvailable()
     return textureStageBitField(u_textureStagesZ, 5) != 0xF;
 }
 
-
 vec4 clearcoatTex(vec2 texcoord)
 {
     return textureStage(textureStageBitField(u_textureStagesZ, 5), texcoord);
@@ -131,7 +138,6 @@ bool isClearcoatRoughnessTextureAvailable()
 {
     return textureStageBitField(u_textureStagesZ, 6) != 0xF;
 }
-
 
 vec4 clearcoatRoughnessTex(vec2 texcoord)
 {
@@ -143,20 +149,39 @@ bool isClearcoatNormalTextureAvailable()
     return textureStageBitField(u_textureStagesZ, 7) != 0xF;
 }
 
-
 vec4 clearcoatNormalTex(vec2 texcoord)
 {
     return textureStage(textureStageBitField(u_textureStagesZ, 7), texcoord);
 }
 
-bool isBrdfLutTextureAvailable()
+bool isSpecularTextureAvailable()
 {
     return textureStageBitField(u_textureStagesW, 0) != 0xF;
 }
 
-vec4 brdfLutTex(vec2 texcoord)
+vec4 specularTex(vec2 texcoord)
 {
     return textureStage(textureStageBitField(u_textureStagesW, 0), texcoord);
+}
+
+bool isSpecularColorTextureAvailable()
+{
+    return textureStageBitField(u_textureStagesW, 1) != 0xF;
+}
+
+vec4 specularColorTex(vec2 texcoord)
+{
+    return textureStage(textureStageBitField(u_textureStagesW, 1), texcoord);
+}
+
+bool isBrdfLutTextureAvailable()
+{
+    return textureStageBitField(u_textureStagesW, 2) != 0xF;
+}
+
+vec4 brdfLutTex(vec2 texcoord)
+{
+    return textureStage(textureStageBitField(u_textureStagesW, 2), texcoord);
 }
 
 #endif // VCL_EXT_BGFX_UNIFORMS_DRAWABLE_MESH_TEXTURE_UNIFORMS_SH

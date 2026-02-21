@@ -69,12 +69,17 @@ class MaterialUniforms
     // alpha cutoff and maybe other alpha related settings can be stored here
      static inline std::array<float, 4> sAlphaPack = {0.5, 0.0, 0.0, 0.0};
 
+    // specular color (RGB) and specular (A)
+    static inline std::array<float, 4> sSpecularPack = {1.0, 1.0, 1.0, 1.0};
+
     static inline Uniform sBaseColorUniform;
     static inline Uniform sFactorsPackUniform;
     static inline Uniform sEmissivePackUniform ;
     static inline Uniform sSettingsUniform;
     static inline Uniform sClearcoatPackUniform;
     static inline Uniform sAlphaPackUniform;
+
+    static inline Uniform sSpecularPackUniform;
 
 public:
     MaterialUniforms() = delete;
@@ -117,7 +122,6 @@ public:
         sFactorsPack[2] = m.metallic();
         sFactorsPack[3] = m.normalScale();
 
-
         sClearcoatPack[0] = m.clearcoat();
         sClearcoatPack[1] = m.clearcoatRoughness();
         sClearcoatPack[2] = m.clearcoatNormalScale();
@@ -126,6 +130,11 @@ public:
         sEmissivePack[1] = m.emissiveColor().greenF();
         sEmissivePack[2] = m.emissiveColor().blueF();
         sEmissivePack[3] = m.emissiveStrength();
+
+        sSpecularPack[0] = m.specularColor()[0];
+        sSpecularPack[1] = m.specularColor()[1];
+        sSpecularPack[2] = m.specularColor()[2];
+        sSpecularPack[3] = m.specular();
     }
 
     static void bind()
@@ -147,12 +156,16 @@ public:
         if (! sAlphaPackUniform.isValid())
         	sAlphaPackUniform = Uniform("u_alphaPack", bgfx::UniformType::Vec4);
 
+        if (!sSpecularPackUniform.isValid())
+            sSpecularPackUniform = Uniform("u_specularPack", bgfx::UniformType::Vec4);
+
         sBaseColorUniform.bind(&sBaseColor);
         sFactorsPackUniform.bind(&sFactorsPack);
         sEmissivePackUniform.bind(&sEmissivePack);
         sSettingsUniform.bind(&sSettings);
         sClearcoatPackUniform.bind(&sClearcoatPack);
         sAlphaPackUniform.bind(&sAlphaPack);
+        sSpecularPackUniform.bind(&sSpecularPack);
     }
 };
 
